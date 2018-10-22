@@ -1,0 +1,17 @@
+language: python
+python:
+    - "3.6"
+
+install:
+    - pip install -r dev-requirements.txt
+
+before_script:
+    - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+    - chmod +x ./cc-test-reporter
+    - ./cc-test-reporter before-build
+
+script:
+    - python -m pytest --cov=microkubes --cov-report xml:coverage-report.xml -s tests/
+
+after_script:
+    - if [ -f "coverage-report.xml" ]; then sed 's|<source>.*/microkubes</source>|<source>microkubes</source>|' coverage-report.xml > coverage.xml; fi && ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT

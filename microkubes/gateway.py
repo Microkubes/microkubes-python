@@ -2,7 +2,7 @@
 """
 
 
-from urllib.parse import urlparse
+from urllib.parse import urljoin
 import requests
 
 
@@ -18,10 +18,16 @@ class Registrator:
         url = self.gw_admin_url
         if path:
             url += '/' + path
-        if params:
-            url += '&'.join(['%s=%s' % (k, v) for k,v in params.items()])
         
-        return urlparse(url).geturl()
+        trail_slash = url[-1] == '/'
+        url = urljoin(url + '/', '.')
+        if not trail_slash:
+            url = url[0:-1]
+
+        if params:
+            url += '?' + '&'.join(['%s=%s' % (k, v) for k,v in sorted(params.items())])
+        
+        return url
 
     def register(self, **kwargs):
         if not kwargs.get('name'):

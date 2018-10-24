@@ -9,7 +9,8 @@ Welcome to microkubes-python's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
+   
+   api
 
 
 Indices and tables
@@ -19,5 +20,3 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. automodule:: microkubes.gateway
-    :members:

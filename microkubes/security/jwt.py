@@ -3,6 +3,7 @@
 from logging import getLogger
 import jwt
 from microkubes.security.auth import Auth
+from microkubes.security.keys import KeyException
 
 
 log = getLogger(__name__)
@@ -50,8 +51,9 @@ class JWTProvider:
         keys = []
         try:
             keys = self._get_keys(token_value)
-        except KeyError:
+        except KeyException:
             return None
+
         if not keys:
             return None
 

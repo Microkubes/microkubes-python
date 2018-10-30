@@ -67,7 +67,7 @@ class KeyStore:
         if keys is not None:
             self._load_keys_from_map(keys)
 
-    def get_key(self, key_name=None):
+    def get_key(self, key_name=None, public=True):
         """Retrieves a :class:`Key` by name.
 
         :param key_name: ``str``, the name of the key to retrieve. If not given, the default value is ``default``.
@@ -77,6 +77,8 @@ class KeyStore:
         """
         if key_name is None:
             key_name = 'default'
+        key_name = key_name + '.pub' if public else key_name
+
         key = self.keys.get(key_name)
         if not key:
             raise KeyException('No such key: %s' % key_name)
@@ -92,7 +94,7 @@ class KeyStore:
         :returns: :class:`Key` if the key is found; otherwise raises :class:`KeyException`.
 
         """
-        key = self.get_key(key_name=key_name)
+        key = self.get_key(key_name=key_name, public=False)
         if key.public:
             raise KeyException('No such private key: %s' % key_name)
         return key
@@ -100,7 +102,7 @@ class KeyStore:
     def public_keys(self):
         """Retrieves all of the public keys as a dict key_name => :class:`Key`.
         """
-        return {key_name: key for key_name, key in self.keys.items() if key.public}
+        return {key_name[:-4]: key for key_name, key in self.keys.items() if key.public}
 
     def add_key(self, key_name, key_file):
         """Add a key to this :class:`KeyStore`.
@@ -112,6 +114,7 @@ class KeyStore:
         self._load_keys_from_map({key_name: key_file})
 
     def _load_keys_from_dir(self, dir_path):
+        print('Loading from DIR: ', dir_path)
         if not isdir(dir_path):
             raise KeyException('Path %s is not a directory.' % dir_path)
 
@@ -121,7 +124,7 @@ class KeyStore:
                 key_name = basename(abs_file_name)
                 lwr_name = key_name.lower()
                 if lwr_name.endswith('.pub'):
-                    self.keys[key_name[:-4]] = Key(abs_file_name, public=True)
+                    self.keys[key_name[:-4] + '.pub'] = Key(abs_file_name, public=True)
                 elif lwr_name.endswith('.pem') or '.' not in lwr_name:
                     self.keys[key_name.split('.')[0]] = Key(abs_file_name, public=False)
 
@@ -134,4 +137,5 @@ class KeyStore:
             priv_key = True
             if base_name.lower().endswith('.pub'):
                 priv_key = False
+            key_name = key_name if priv_key else key_name + '.pub'
             self.keys[key_name] = Key(abs_key_file, public=not priv_key)

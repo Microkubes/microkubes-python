@@ -1,5 +1,7 @@
+requests==2.20.0
 pylint==2.1.1
 pytest==3.9.1
 pytest-cov==2.6.0
 Sphinx==1.8.1
 pook==0.2.5
+PyJWT==1.6.4

@@ -2,7 +2,6 @@
 """
 
 from os.path import join as path_join
-from unittest import mock
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from microkubes.security.keys import Key, KeyStore
 
@@ -22,6 +21,8 @@ def test_load_key():
 
 
 def test_key_store_load_from_dir():
+    """Test KeyStore loading keys from a directory.
+    """
     with TemporaryDirectory() as tmpdir:
 
         with open(path_join(tmpdir, 'system'), 'wb') as kf:
@@ -64,7 +65,8 @@ def test_key_store_load_from_dir():
 
 
 def test_key_store_load_keys_map():
-
+    """Test KeyStore loading keys from a given keys map.
+    """
     with TemporaryDirectory() as tmpdir:
 
         with open(path_join(tmpdir, 'system'), 'wb') as kf:
@@ -72,10 +74,10 @@ def test_key_store_load_keys_map():
 
         with open(path_join(tmpdir, 'default.pub'), 'wb') as kf:
             kf.write(b'DEFAULT PUBLIC KEY')
-        
+
         with open(path_join(tmpdir, 'system.pub'), 'wb') as kf:
             kf.write(b'SYSTEM PUBLIC KEY')
-    
+
         ks = KeyStore(keys={
             'default': path_join(tmpdir, 'default.pub'),
             'system': path_join(tmpdir, 'system'),

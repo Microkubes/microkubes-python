@@ -4,12 +4,13 @@
 
 class Auth:
 
-    def __init__(self, user_id, username, roles=None, organizations=None, namespaces=None):
+    def __init__(self, user_id, username, roles=None, organizations=None, namespaces=None, scope=None):
         self.user_id = user_id
         self.username = username
         self.roles = roles or []
         self.organizations = organizations or []
         self.namespaces = namespaces or []
+        self.scope = scope
 
 
 def get_auth(local_context):

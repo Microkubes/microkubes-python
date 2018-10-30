@@ -90,7 +90,7 @@ class JWTProvider:
         if namespaces:
             namespaces = [ns.strip() for ns in namespaces.split(',')]
 
-        return Auth(user_id, username, roles=roles, organizations=organizations, namespaces=namespaces)
+        return Auth(user_id, username, roles=roles, organizations=organizations, namespaces=namespaces, scope=scope)
 
     def _get_keys(self, token_value):
         token_header = jwt.get_unverified_header(token_value)
@@ -98,7 +98,7 @@ class JWTProvider:
         if key_name:
             return [self.key_store.get_key(key_name)]
         # if JWT key id not set, then try all
-        return [key for _, key in self.key_store.public_keys()]
+        return [key for _, key in self.key_store.public_keys().items()]
 
     def _get_token(self, header_value):
         if not self.auth_schema:

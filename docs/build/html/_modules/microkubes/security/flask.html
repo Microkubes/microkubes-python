@@ -1,0 +1,450 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>microkubes.security.flask &#8212; microkubes-python 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for microkubes.security.flask</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Flask decorators and helpers to set up Microkubes security for Flask apps.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">json</span> <span class="k">import</span> <span class="n">dumps</span>
+
+<span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">request</span><span class="p">,</span> <span class="n">make_response</span><span class="p">,</span> <span class="n">g</span>
+
+<span class="kn">from</span> <span class="nn">microkubes.security.jwt</span> <span class="k">import</span> <span class="n">JWTProvider</span>
+<span class="kn">from</span> <span class="nn">microkubes.security.oauth2</span> <span class="k">import</span> <span class="n">OAuth2Provider</span>
+<span class="kn">from</span> <span class="nn">microkubes.security.auth</span> <span class="k">import</span> <span class="n">SecurityContext</span>
+<span class="kn">from</span> <span class="nn">microkubes.security.chain</span> <span class="k">import</span> <span class="p">(</span><span class="n">Request</span><span class="p">,</span>
+                                       <span class="n">Response</span><span class="p">,</span>
+                                       <span class="n">SecurityException</span><span class="p">,</span>
+                                       <span class="n">SecurityChain</span><span class="p">,</span>
+                                       <span class="n">is_authenticated_provider</span><span class="p">,</span>
+                                       <span class="n">public_routes_provider</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">microkubes.security.keys</span> <span class="k">import</span> <span class="n">KeyStore</span>
+
+
+<div class="viewcode-block" id="FlaskSecurityError"><a class="viewcode-back" href="../../../api.html#microkubes.security.flask.FlaskSecurityError">[docs]</a><span class="k">class</span> <span class="nc">FlaskSecurityError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Error during security setup for Flask apps.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="FlaskSecurityContext"><a class="viewcode-back" href="../../../api.html#microkubes.security.flask.FlaskSecurityContext">[docs]</a><span class="k">class</span> <span class="nc">FlaskSecurityContext</span><span class="p">(</span><span class="n">SecurityContext</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;SecurityContext that wraps Flask&#39;s ``g`` object. Request Scoped.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FlaskSecurityContext</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">g</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Security"><a class="viewcode-back" href="../../../api.html#microkubes.security.flask.Security">[docs]</a><span class="k">class</span> <span class="nc">Security</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Main security object.</span>
+
+<span class="sd">    Contains the configured :class:`microkubes.security.chain.SecurityChain` and</span>
+<span class="sd">    executes it for every secured action.</span>
+
+<span class="sd">    A secured action is an action decorated with :func:`Security.secured`.</span>
+
+<span class="sd">    Given that we have configured a SecurityChain, we can protect/secure Flask actions like this:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            sec = Security(security_chain=chain, context=FlaskSecurityContext())</span>
+
+<span class="sd">            @app.route(&#39;/&#39;)</span>
+<span class="sd">            @sec.secured</span>
+<span class="sd">            def my_action():</span>
+<span class="sd">                return &#39;My secured action.&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">security_chain</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">json_response</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">security_chain</span> <span class="o">=</span> <span class="n">security_chain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">context</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">json_response</span> <span class="o">=</span> <span class="n">json_response</span>
+
+<div class="viewcode-block" id="Security.check"><a class="viewcode-back" href="../../../api.html#microkubes.security.flask.Security.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform the check for the given Request in the current SecurityContext.</span>
+
+<span class="sd">        :returns: ``tuple``: ``(allowed, flask_response)``, where:</span>
+<span class="sd">            * ``allowed`` is ``bool`` indicating whether the request is allowed to proceed.</span>
+<span class="sd">            * ``flask_response`` - :class:`Response` the Flask response. May be ``None``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">Response</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">security_chain</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">resp</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">SecurityException</span> <span class="k">as</span> <span class="n">security_error</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">json_response</span><span class="p">:</span>
+                <span class="n">flask_response</span> <span class="o">=</span> <span class="n">make_response</span><span class="p">(</span><span class="n">dumps</span><span class="p">({</span>
+                    <span class="s1">&#39;code&#39;</span><span class="p">:</span> <span class="n">security_error</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span>
+                    <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">security_error</span><span class="p">),</span>
+                <span class="p">}),</span> <span class="n">security_error</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">flask_response</span> <span class="o">=</span> <span class="n">make_response</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">security_error</span><span class="p">),</span> <span class="n">security_error</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">security_error</span><span class="o">.</span><span class="n">headers</span><span class="p">:</span>
+                <span class="n">flask_response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">security_error</span><span class="o">.</span><span class="n">headers</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">flask_response</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">modified</span> <span class="ow">or</span> <span class="n">resp</span><span class="o">.</span><span class="n">ended</span><span class="p">:</span>
+            <span class="n">flask_response</span> <span class="o">=</span> <span class="n">make_response</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">get_response_body</span><span class="p">(),</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+            <span class="n">flask_response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">status</span>
+            <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">headers</span><span class="p">:</span>
+                <span class="n">flask_response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">headers</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">flask_response</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Security.secured"><a class="viewcode-back" href="../../../api.html#microkubes.security.flask.Security.secured">[docs]</a>    <span class="k">def</span> <span class="nf">secured</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decorated</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Decorator for security check.</span>
+
+<span class="sd">        When decorated with ``@security.secured``, the decorated method will not be called</span>
+<span class="sd">        unless the security check passes.</span>
+
+<span class="sd">        :param decorated: ``function``, the decorated method.</span>
+
+<span class="sd">        :returns: ``function``, the security decorator for the given method or function..</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">_secured_method</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">allowed</span><span class="p">,</span> <span class="n">flask_resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">allowed</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">flask_resp</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">flask_resp</span>
+                <span class="k">return</span> <span class="n">make_response</span><span class="p">(</span><span class="s2">&quot;Request denied&quot;</span><span class="p">,</span> <span class="mi">403</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">flask_resp</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">flask_resp</span>
+            <span class="k">return</span> <span class="n">decorated</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_secured_method</span></div></div>
+
+
+<span class="n">_SECURITY_CONTEXT</span> <span class="o">=</span> <span class="n">FlaskSecurityContext</span><span class="p">()</span>  <span class="c1"># Default g-based security context.</span>
+
+
+<div class="viewcode-block" id="FlaskSecurity"><a class="viewcode-back" href="../../../api.html#microkubes.security.flask.FlaskSecurity">[docs]</a><span class="k">class</span> <span class="nc">FlaskSecurity</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Flask security builder.</span>
+
+<span class="sd">    Builds new Microkubes enabled security for Flask applications.</span>
+<span class="sd">    In the background it generates a ``SecurityChain`` and :class:`Security` that can be</span>
+<span class="sd">    used to secure the Flask&#39;s endpoints.</span>
+
+<span class="sd">    Example setup:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from flask import Flask</span>
+<span class="sd">            from microkubes.security import FlaskSecurity</span>
+
+<span class="sd">            app = Flask(__name__)</span>
+
+<span class="sd">            sec = (FlaskSecurity().  # new security with default secuity context</span>
+<span class="sd">                    keys_dir(&#39;./keys&#39;).  # the RSA keys are in this directory</span>
+<span class="sd">                    static_files(r&#39;.*\\.js&#39;, r&#39;.*\\.css&#39;, r&#39;.*\\.png&#39;, r&#39;.*\\.jpg&#39;, r&#39;.*\\.jpeg&#39;). # ignore these</span>
+<span class="sd">                    public_route(&#39;/public/.*&#39;).  # ignore this too</span>
+<span class="sd">                    jwt().  # Support JWT</span>
+<span class="sd">                    oauth2().  # Support OAuth2</span>
+<span class="sd">                    build())  # Finally, build the security</span>
+
+<span class="sd">            @app.route(&quot;/&quot;)</span>
+<span class="sd">            @sec.secured</span>
+<span class="sd">            def hello_world():</span>
+<span class="sd">                return &#39;hello world&#39;</span>
+
+<span class="sd">    :param context: :class:`microkubes.security.auth.SecurityContext` - the security context to be used.</span>
+<span class="sd">        By default :class:`FlaskSecurityContext` is used.</span>
+<span class="sd">    :param key_store: :class:`microkubes.security.keys.KeyStore`, ``KeyStore`` instance.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">key_store</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key_store</span> <span class="o">=</span> <span class="n">key_store</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">context</span> <span class="ow">or</span> <span class="n">_SECURITY_CONTEXT</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_context</span> <span class="o">=</span> <span class="n">context</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_chain</span> <span class="o">=</span> <span class="n">SecurityChain</span><span class="p">(</span><span class="n">security_context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_public_routes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_jwt_provider</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_oauth_provider</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_other_providers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prefer_json_respose</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="FlaskSecurity.keys_dir"><a class="viewcode-back" href="../../../api.html#microkubes.security.flask.FlaskSecurity.keys_dir">[docs]</a>    <span class="k">def</span> <span class="nf">keys_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load the keys for the ``KeyStore`` from this directory.</span>
+
+<span class="sd">        :param path: ``str``, keys directory path.</span>
+
+<span class="sd">        :returns: :class:`FlaskSecurity`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_store</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">FlaskSecurityError</span><span class="p">(</span><span class="s2">&quot;KeyStore is already defined.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key_store</span> <span class="o">=</span> <span class="n">KeyStore</span><span class="p">(</span><span class="n">dir_path</span><span class="o">=</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="FlaskSecurity.use_key"><a class="viewcode-back" href="../../../api.html#microkubes.security.flask.FlaskSecurity.use_key">[docs]</a>    <span class="k">def</span> <span class="nf">use_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_name</span><span class="p">,</span> <span class="n">key_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add mapped key to the ``KeyStore``.</span>
+
+<span class="sd">        :param key_name: ``str``, the name (id) of the key.</span>
+<span class="sd">        :param key_file: ``str``, path to the key file.</span>
+
+<span class="sd">        :returns: :class:`FlaskSecurity`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_store</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">key_store</span> <span class="o">=</span> <span class="n">KeyStore</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key_store</span><span class="o">.</span><span class="n">add_key</span><span class="p">(</span><span class="n">key_name</span><span class="p">,</span> <span class="n">key_file</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="FlaskSecurity.jwt"><a class="viewcode-back" href="../../../api.html#microkubes.security.flask.FlaskSecurity.jwt">[docs]</a>    <span class="k">def</span> <span class="nf">jwt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="s1">&#39;Authorization&#39;</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="s1">&#39;Bearer&#39;</span><span class="p">,</span> <span class="n">algs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Setup JWT security provider.</span>
+
+<span class="sd">        This provider tries to decode and create auth from a JWT in the HTTP request.</span>
+
+<span class="sd">        :param header: ``str``, the name of the HTTP auth header. Default is ``Authorization``.</span>
+<span class="sd">        :param schema: ``str``, the auth schema used for the auth HTTP header. By default this is ``Bearer`` token.</span>
+<span class="sd">        :param algs: ``list``, list of accepted signing algorithms. If not specified assumes ``HS256`` and ``RS256``.</span>
+
+<span class="sd">        :returns: :class:`FlaskSecurity`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_store</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">FlaskSecurityError</span><span class="p">(</span><span class="s1">&#39;KeyStore must be defined before setting up the JWT provider.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_jwt_provider</span> <span class="o">=</span> <span class="n">JWTProvider</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key_store</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="n">header</span><span class="p">,</span> <span class="n">auth_schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span> <span class="n">algs</span><span class="o">=</span><span class="n">algs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="FlaskSecurity.oauth2"><a class="viewcode-back" href="../../../api.html#microkubes.security.flask.FlaskSecurity.oauth2">[docs]</a>    <span class="k">def</span> <span class="nf">oauth2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">algs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Setup OAuth2 security provider.</span>
+
+<span class="sd">        This provider will try to decode and validate an OAuth2 token. All tokens with Microkubes are</span>
+<span class="sd">        self-contained and are JWTs.</span>
+
+<span class="sd">        :param algs: ``list``, list of accepted signing algorithms. If not specified assumes ``HS256`` and ``RS256``.</span>
+
+<span class="sd">        :returns: :class:`FlaskSecurity`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_store</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">FlaskSecurityError</span><span class="p">(</span><span class="s1">&#39;KeyStore must be defined before setting up the OAuth2 provider.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_oauth_provider</span> <span class="o">=</span> <span class="n">OAuth2Provider</span><span class="p">(</span><span class="n">key_store</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">key_store</span><span class="p">,</span> <span class="n">algs</span><span class="o">=</span><span class="n">algs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="FlaskSecurity.public_route"><a class="viewcode-back" href="../../../api.html#microkubes.security.flask.FlaskSecurity.public_route">[docs]</a>    <span class="k">def</span> <span class="nf">public_route</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add public routes that will be ignored and not checked by the security.</span>
+
+<span class="sd">        A public route is a HTTP request path that is publicly accessible and does not need authorization</span>
+<span class="sd">        for access.</span>
+
+<span class="sd">        :param args: variadic args, ``list`` of exact routes or regexp patterns to match against. All routes</span>
+<span class="sd">            are treated as regular expression pattern, so:</span>
+
+<span class="sd">                * ``/public/resource`` matches exactly this pattern</span>
+<span class="sd">                * ``/public/.*`` matches both ``/public/a`` and ``/public/file.js`` but not ``/protected/file``</span>
+<span class="sd">                * ``.*\\.js`` matches all js files - both ``/public/file.js`` and ``/protected/file.js``</span>
+
+<span class="sd">        :returns: :class:`FlaskSecurity`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_public_routes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">public_routes_provider</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="FlaskSecurity.static_files"><a class="viewcode-back" href="../../../api.html#microkubes.security.flask.FlaskSecurity.static_files">[docs]</a>    <span class="k">def</span> <span class="nf">static_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Alias for ``public_routes`` method.</span>
+
+<span class="sd">        The only difference is a semantic one, to allow more readablity in the code.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">public_route</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FlaskSecurity.add_provider"><a class="viewcode-back" href="../../../api.html#microkubes.security.flask.FlaskSecurity.add_provider">[docs]</a>    <span class="k">def</span> <span class="nf">add_provider</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">provider</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;last&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add custom security provider to the security chain.</span>
+
+<span class="sd">        The chain executes multiple providers, in order, when processing a request.</span>
+<span class="sd">        This method adds new provider to the security chain&#39;s providers list.</span>
+
+<span class="sd">        Because there are some defult providers that are set up in a certain order, you can provide</span>
+<span class="sd">        a ``position`` and place the custom provider anuwhere in the chain.</span>
+<span class="sd">        If not given, the provider is appended near the end of the list (the provider that checks if</span>
+<span class="sd">        the request is authenticated is always last).</span>
+
+<span class="sd">        In general, these are the available positions, and corresponding placement for the providers:</span>
+
+<span class="sd">        +-----+--------------------------+------------------------------+</span>
+<span class="sd">        | seq | POSITION                 | PROVIDERS                    |</span>
+<span class="sd">        +-----+--------------------------+------------------------------+</span>
+<span class="sd">        | 1   | first                    | custom providers             |</span>
+<span class="sd">        +-----+--------------------------+------------------------------+</span>
+<span class="sd">        | 2   | N/A                      | public_routes                |</span>
+<span class="sd">        +-----+--------------------------+------------------------------+</span>
+<span class="sd">        | 3   | before_jwt, after_public | custom providers             |</span>
+<span class="sd">        +-----+--------------------------+------------------------------+</span>
+<span class="sd">        | 4   | N/A                      | jwt_provider                 |</span>
+<span class="sd">        +-----+--------------------------+------------------------------+</span>
+<span class="sd">        | 5   | after_jwt, before_oauth2 | custom providers             |</span>
+<span class="sd">        +-----+--------------------------+------------------------------+</span>
+<span class="sd">        | 6   | N/A                      | oauth2_provider              |</span>
+<span class="sd">        +-----+--------------------------+------------------------------+</span>
+<span class="sd">        | 7   | last                     | custom providers             |</span>
+<span class="sd">        +-----+--------------------------+------------------------------+</span>
+<span class="sd">        | 8   | N/A                      | is_authenticated_provider    |</span>
+<span class="sd">        +-----+--------------------------+------------------------------+</span>
+<span class="sd">        | 9   | final                    | custom providers             |</span>
+<span class="sd">        +-----+--------------------------+------------------------------+</span>
+
+<span class="sd">        :param provider: ``function``, the security provider to add</span>
+<span class="sd">        :param position: ``str``, at which position in the chain to add the provider. One of ``first``,</span>
+<span class="sd">            ``before_jwt``, ``after_public``, ``after_jwt``, ``before_oauth2``, ``last`` and ``final`` is allowed. </span>
+<span class="sd">            Default is ``last``.</span>
+
+<span class="sd">        :returns: :class:`FlaskSecurity`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="n">position</span> <span class="ow">or</span> <span class="s1">&#39;last&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_other_providers</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">provider</span><span class="p">,</span> <span class="n">position</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+    <span class="k">def</span> <span class="nf">_merge_providers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">providers</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">provider</span><span class="p">,</span> <span class="n">position</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_other_providers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">position</span> <span class="o">==</span> <span class="s1">&#39;first&#39;</span><span class="p">:</span>
+                <span class="n">providers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">provider</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_public_routes</span><span class="p">:</span>
+            <span class="n">providers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">provider</span><span class="p">,</span> <span class="n">position</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_other_providers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">position</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;before_jwt&#39;</span><span class="p">,</span> <span class="s1">&#39;after_public&#39;</span><span class="p">]:</span>
+                <span class="n">providers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jwt_provider</span><span class="p">:</span>
+            <span class="n">providers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_jwt_provider</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">provider</span><span class="p">,</span> <span class="n">position</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_other_providers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">position</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;after_jwt&#39;</span><span class="p">,</span> <span class="s1">&#39;before_oauth&#39;</span><span class="p">,</span> <span class="s1">&#39;before_oauth2&#39;</span><span class="p">]:</span>
+                <span class="n">providers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_oauth_provider</span><span class="p">:</span>
+            <span class="n">providers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">provider</span><span class="p">,</span> <span class="n">position</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_other_providers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">position</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;after_oauth&#39;</span><span class="p">,</span> <span class="s1">&#39;after_oauth2&#39;</span><span class="p">,</span> <span class="s1">&#39;last&#39;</span><span class="p">]:</span>
+                <span class="n">providers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
+
+        <span class="n">providers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">is_authenticated_provider</span><span class="p">)</span>
+
+
+        <span class="k">for</span> <span class="n">provider</span><span class="p">,</span> <span class="n">position</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_other_providers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">position</span> <span class="o">==</span> <span class="s1">&#39;final&#39;</span><span class="p">:</span>
+                <span class="n">providers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">providers</span>
+
+<div class="viewcode-block" id="FlaskSecurity.build_chain"><a class="viewcode-back" href="../../../api.html#microkubes.security.flask.FlaskSecurity.build_chain">[docs]</a>    <span class="k">def</span> <span class="nf">build_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build a :class:`microkubes.security.chain.SecurityChain` from the configured values.</span>
+
+<span class="sd">        :returns: the :class:`microkubes.security.chain.SecurityChain`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_store</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">FlaskSecurityError</span><span class="p">(</span><span class="s1">&#39;Please define a KeyStore.&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">provider</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_providers</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_chain</span><span class="o">.</span><span class="n">provider</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chain</span></div>
+
+<div class="viewcode-block" id="FlaskSecurity.build"><a class="viewcode-back" href="../../../api.html#microkubes.security.flask.FlaskSecurity.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build a ``Security`` from the configured values.</span>
+
+<span class="sd">        It builds a security chain and configures a new security to be used in flask apps.</span>
+
+<span class="sd">        :returns: :class:`Security`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">chain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_chain</span><span class="p">()</span>
+        <span class="n">security</span> <span class="o">=</span> <span class="n">Security</span><span class="p">(</span><span class="n">security_chain</span><span class="o">=</span><span class="n">chain</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_context</span><span class="p">,</span> <span class="n">json_response</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefer_json_respose</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">security</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">microkubes-python</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">Microkubes Python library API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Keitaro <info@keitaro.com>.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

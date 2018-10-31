@@ -1,0 +1,221 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>microkubes.security.jwt &#8212; microkubes-python 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for microkubes.security.jwt</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;JWT security provider</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">logging</span> <span class="k">import</span> <span class="n">getLogger</span>
+<span class="kn">import</span> <span class="nn">jwt</span>
+<span class="kn">from</span> <span class="nn">microkubes.security.auth</span> <span class="k">import</span> <span class="n">Auth</span>
+<span class="kn">from</span> <span class="nn">microkubes.security.keys</span> <span class="k">import</span> <span class="n">KeyException</span>
+
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="JWTProvider"><a class="viewcode-back" href="../../../api.html#microkubes.security.jwt.JWTProvider">[docs]</a><span class="k">class</span> <span class="nc">JWTProvider</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Implements JWT decoding and validation as a security chain provider.</span>
+
+<span class="sd">    :param key_store: :class:`microkubes.security.keys.KeyStore`, the KeyStore to use with this provider.</span>
+<span class="sd">    :param header: ``str``, the name of the security header. Default is ``Authorization``.</span>
+<span class="sd">    :param auth_schema: ``str``, the format of the security header. The default schema is ``Bearer`` token.</span>
+<span class="sd">    :param algs: ``list``, list of supported hash signing algorithms. Default is ``[&quot;HS256&quot;, &quot;RS256&quot;]``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_store</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="s1">&#39;Authorization&#39;</span><span class="p">,</span> <span class="n">auth_schema</span><span class="o">=</span><span class="s1">&#39;Bearer&#39;</span><span class="p">,</span> <span class="n">algs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key_store</span> <span class="o">=</span> <span class="n">key_store</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">header</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">auth_schema</span> <span class="o">=</span> <span class="n">auth_schema</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">algs</span> <span class="o">=</span> <span class="n">algs</span> <span class="ow">or</span> <span class="p">[</span><span class="s1">&#39;HS256&#39;</span><span class="p">,</span> <span class="s1">&#39;RS256&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="JWTProvider.execute"><a class="viewcode-back" href="../../../api.html#microkubes.security.jwt.JWTProvider.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">resp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Execute the security chain provider.</span>
+
+<span class="sd">        Checks for security header containing JWT token. If found, the token is decoded and</span>
+<span class="sd">        validated with the keys provided by the ``KeyStore``. If the token contains the optional</span>
+<span class="sd">        key ID header (``kid``), then the decoding will be attempted with the specified key (if</span>
+<span class="sd">        such key can be found with the registered ``KeyStore``).</span>
+
+<span class="sd">        If the attempted decoding and validation of the JWT is successful, then :class:`microkubes.security.auth.Auth`</span>
+<span class="sd">        is created and set in the current security context.</span>
+
+<span class="sd">        :param ctx: :class:`microkubes.security.auth.SecurityContext`, current ``SecurityContext``.</span>
+<span class="sd">        :param req: :class:`microkubes.security.chain.Request`, wrapped HTTP Request.</span>
+<span class="sd">        :param resp: :class:`microkubes.security.chain.Response`, wrapped HTTP Response.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">header_value</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">get_header</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">header_value</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">token_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_token</span><span class="p">(</span><span class="n">header_value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">token_value</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_keys</span><span class="p">(</span><span class="n">token_value</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">KeyException</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">token</span> <span class="o">=</span> <span class="n">jwt</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">token_value</span><span class="p">,</span> <span class="n">key</span><span class="o">.</span><span class="n">load</span><span class="p">(),</span> <span class="n">algorithms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">algs</span><span class="p">)</span>
+                <span class="n">auth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_auth</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+                <span class="n">ctx</span><span class="o">.</span><span class="n">set_auth</span><span class="p">(</span><span class="n">auth</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Failed to decode JWT: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_auth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">):</span>
+        <span class="n">user_id</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;userId&#39;</span><span class="p">)</span>
+        <span class="n">username</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;username&#39;</span><span class="p">)</span>
+        <span class="n">scope</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;scope&#39;</span><span class="p">)</span>
+        <span class="n">roles</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;roles&#39;</span><span class="p">,</span> <span class="p">[])</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user_id</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;user_id is missing&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">username</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;username is missing&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">scope</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;scope not specified&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">roles</span><span class="p">:</span>
+            <span class="n">roles</span> <span class="o">=</span> <span class="p">[</span><span class="n">role</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">roles</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+
+        <span class="n">organizations</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;organizations&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">organizations</span><span class="p">:</span>
+            <span class="n">organizations</span> <span class="o">=</span> <span class="p">[</span><span class="n">org</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">org</span> <span class="ow">in</span> <span class="n">organizations</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+
+        <span class="n">namespaces</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;namespaces&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">namespaces</span><span class="p">:</span>
+            <span class="n">namespaces</span> <span class="o">=</span> <span class="p">[</span><span class="n">ns</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">ns</span> <span class="ow">in</span> <span class="n">namespaces</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="n">Auth</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">roles</span><span class="o">=</span><span class="n">roles</span><span class="p">,</span> <span class="n">organizations</span><span class="o">=</span><span class="n">organizations</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">=</span><span class="n">namespaces</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="n">scope</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token_value</span><span class="p">):</span>
+        <span class="n">token_header</span> <span class="o">=</span> <span class="n">jwt</span><span class="o">.</span><span class="n">get_unverified_header</span><span class="p">(</span><span class="n">token_value</span><span class="p">)</span>
+        <span class="n">key_name</span> <span class="o">=</span> <span class="n">token_header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;kid&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key_name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">key_store</span><span class="o">.</span><span class="n">get_key</span><span class="p">(</span><span class="n">key_name</span><span class="p">)]</span>
+        <span class="c1"># if JWT key id not set, then try all</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_store</span><span class="o">.</span><span class="n">public_keys</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+    <span class="k">def</span> <span class="nf">_get_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header_value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">auth_schema</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">header_value</span>
+
+        <span class="k">if</span> <span class="n">header_value</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> &#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">auth_schema</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">header_value</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">auth_schema</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>
+
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">resp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Makes the instance of this class callable and thus available for use</span>
+<span class="sd">        directly as a ``SecurityChain`` provider.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">resp</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">microkubes-python</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">Microkubes Python library API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Keitaro <info@keitaro.com>.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

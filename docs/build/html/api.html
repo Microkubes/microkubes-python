@@ -1,0 +1,1136 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Microkubes Python library API reference &#8212; microkubes-python 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to microkubes-python’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="microkubes-python-library-api-reference">
+<h1>Microkubes Python library API reference<a class="headerlink" href="#microkubes-python-library-api-reference" title="Permalink to this headline">¶</a></h1>
+<p>Full API docs:</p>
+<span class="target" id="module-microkubes.gateway"></span><p>API Gateway tools for Microkubes.</p>
+<dl class="class">
+<dt id="microkubes.gateway.KongGatewayRegistrator">
+<em class="property">class </em><code class="descclassname">microkubes.gateway.</code><code class="descname">KongGatewayRegistrator</code><span class="sig-paren">(</span><em>gw_admin_url</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/gateway.html#KongGatewayRegistrator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.gateway.KongGatewayRegistrator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registrator for Kong API Gateway.</p>
+<p>Registers services with Kong Gateway using the Kong admin API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>gw_admin_url</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, Kong Admin API base URL.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="microkubes.gateway.KongGatewayRegistrator.register_service">
+<code class="descname">register_service</code><span class="sig-paren">(</span><em>service_def</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/gateway.html#KongGatewayRegistrator.register_service"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.gateway.KongGatewayRegistrator.register_service" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does an actual registration of the service with the Kong API Gateway.</p>
+<p>If the service already exists and is registered with the gateway, then the confguration
+is updated with the given <code class="docutils literal notranslate"><span class="pre">service_def</span></code>. Otherwise, the service is added to the gateway
+registry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">dict</span></code>, the JSON response from the gateway itself. Refer to the Kong
+documentation for the actual response schema.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="microkubes.gateway.RegistrationException">
+<em class="property">exception </em><code class="descclassname">microkubes.gateway.</code><code class="descname">RegistrationException</code><a class="reference internal" href="_modules/microkubes/gateway.html#RegistrationException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.gateway.RegistrationException" title="Permalink to this definition">¶</a></dt>
+<dd><p>RegistrationException represents an exception that occured during the process
+of self-registration on the API Gateway.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="microkubes.gateway.Registrator">
+<em class="property">class </em><code class="descclassname">microkubes.gateway.</code><code class="descname">Registrator</code><span class="sig-paren">(</span><em>gw_admin_url='http://gateway:8001'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/gateway.html#Registrator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.gateway.Registrator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers service to an API Gateway.</p>
+<p>This is a base class intended to implement the general behaviour for registration
+a service on the API Gateway.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>gw_admin_url</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the API Gateway base url for admin REST actions. The
+default value is <code class="docutils literal notranslate"><span class="pre">&quot;http://gateway:8001&quot;</span></code>.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="microkubes.gateway.Registrator.register">
+<code class="descname">register</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/gateway.html#Registrator.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.gateway.Registrator.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a service with the API Gateway.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the name of the service. This is required.</li>
+<li><strong>paths</strong> – <code class="docutils literal notranslate"><span class="pre">list</span></code>, list of paths to match the request path agaisnt. If any match,
+the request will be routed to the registered API. This parameter is required.</li>
+<li><strong>host</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the actual (LAN) hostname of the service. This parameter is requred.</li>
+<li><strong>port</strong> – <code class="docutils literal notranslate"><span class="pre">int</span></code>, service port. The incoming trafic for the service will be routed to
+this port on the service <code class="docutils literal notranslate"><span class="pre">host</span></code>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.gateway.Registrator.register_service">
+<code class="descname">register_service</code><span class="sig-paren">(</span><em>service_def</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/gateway.html#Registrator.register_service"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.gateway.Registrator.register_service" title="Permalink to this definition">¶</a></dt>
+<dd><p>Actual registration of the service with the specific gateway.</p>
+<p>This method is intended to be overriden in a subclass to actually register
+the service with the specific gateway.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>service_def</strong> – <p><code class="docutils literal notranslate"><span class="pre">dict</span></code>, contains the validated service definition. The
+following properties are guaranteed:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">name</span></code> - service name</li>
+<li><code class="docutils literal notranslate"><span class="pre">port</span></code> - service actual port</li>
+<li><code class="docutils literal notranslate"><span class="pre">host</span></code> - service actual host</li>
+<li><code class="docutils literal notranslate"><span class="pre">paths</span></code> - list of path patterns to register the service with</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-microkubes.security.auth"></span><p>Security Auth model and SecurityContext API.</p>
+<span class="target" id="module-microkubes.security.chain"></span><p>SecurityChain implementation.</p>
+<dl class="exception">
+<dt id="microkubes.security.chain.BreakChain">
+<em class="property">exception </em><code class="descclassname">microkubes.security.chain.</code><code class="descname">BreakChain</code><a class="reference internal" href="_modules/microkubes/security/chain.html#BreakChain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.BreakChain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised to stop the security chain at the current provider. If raised,
+then the chain will break after the provider that raised the error and
+will not execute the rest of the providers. The security chain must not
+re-raise this error, as this is considered regular way of terminating the
+chain execution.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="microkubes.security.chain.Request">
+<em class="property">class </em><code class="descclassname">microkubes.security.chain.</code><code class="descname">Request</code><span class="sig-paren">(</span><em>request</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#Request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.Request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Request wrapper, partly compatible with Flask Request.</p>
+<p>Wraps the original request to ensure trasparent access to most common properties
+of while evaluating the request for security authentication/authorization.</p>
+<p>This basic implementation will try to treat the wrapped (underlying) HTTP request
+to be Flask-type request object. Other implemenations can extend from this class
+and override or add other functinalities for accessing the request data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>request</strong> – <code class="docutils literal notranslate"><span class="pre">object</span></code>, the original request. This may be the original Flask Request
+or any other underlying implementation type request object.</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="microkubes.security.chain.Request.data">
+<code class="descname">data</code><a class="headerlink" href="#microkubes.security.chain.Request.data" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTTP request data. Usually raw data because it was not decoded as form params or json.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="microkubes.security.chain.Request.form">
+<code class="descname">form</code><a class="headerlink" href="#microkubes.security.chain.Request.form" title="Permalink to this definition">¶</a></dt>
+<dd><p>Form data as dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.chain.Request.get_data">
+<code class="descname">get_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#Request.get_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.Request.get_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the raw HTTP request data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.chain.Request.get_form">
+<code class="descname">get_form</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#Request.get_form"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.Request.get_form" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get decoded form params as dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.chain.Request.get_header">
+<code class="descname">get_header</code><span class="sig-paren">(</span><em>header</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#Request.get_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.Request.get_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the value of the specified HTTP request header.</p>
+<p>:param header” <code class="docutils literal notranslate"><span class="pre">str</span></code>, the header name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">str</span></code> the header value or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.chain.Request.get_json">
+<code class="descname">get_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#Request.get_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.Request.get_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the decoded JSON data as dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="microkubes.security.chain.Request.headers">
+<code class="descname">headers</code><a class="headerlink" href="#microkubes.security.chain.Request.headers" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTTP Request headers dict.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="microkubes.security.chain.Request.host">
+<code class="descname">host</code><a class="headerlink" href="#microkubes.security.chain.Request.host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Host name, usually retrieved from the HTTP headers.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="microkubes.security.chain.Request.json">
+<code class="descname">json</code><a class="headerlink" href="#microkubes.security.chain.Request.json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dict containing the decoded JSON data.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="microkubes.security.chain.Request.method">
+<code class="descname">method</code><a class="headerlink" href="#microkubes.security.chain.Request.method" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTTP method for this request.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="microkubes.security.chain.Request.path">
+<code class="descname">path</code><a class="headerlink" href="#microkubes.security.chain.Request.path" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTTP request path.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="microkubes.security.chain.Request.query_string">
+<code class="descname">query_string</code><a class="headerlink" href="#microkubes.security.chain.Request.query_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTTP request query string.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="microkubes.security.chain.Request.scheme">
+<code class="descname">scheme</code><a class="headerlink" href="#microkubes.security.chain.Request.scheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTTP request scheme (<code class="docutils literal notranslate"><span class="pre">http</span></code> or <code class="docutils literal notranslate"><span class="pre">https</span></code>).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="microkubes.security.chain.Request.url">
+<code class="descname">url</code><a class="headerlink" href="#microkubes.security.chain.Request.url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Request URL (full).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="microkubes.security.chain.Response">
+<em class="property">class </em><code class="descclassname">microkubes.security.chain.</code><code class="descname">Response</code><a class="reference internal" href="_modules/microkubes/security/chain.html#Response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.Response" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTTP response wrapper.</p>
+<dl class="method">
+<dt id="microkubes.security.chain.Response.end">
+<code class="descname">end</code><span class="sig-paren">(</span><em>code=None</em>, <em>status=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#Response.end"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.Response.end" title="Permalink to this definition">¶</a></dt>
+<dd><p>End this response.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>code</strong> – <code class="docutils literal notranslate"><span class="pre">int</span></code>, HTTP response status code.</li>
+<li><strong>status</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, HTTP response status message.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.chain.Response.get_response_body">
+<code class="descname">get_response_body</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#Response.get_response_body"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.Response.get_response_body" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get response body as string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">str</span></code>, the response body from the underlying StringIO buffer.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="microkubes.security.chain.Response.headers">
+<code class="descname">headers</code><a class="headerlink" href="#microkubes.security.chain.Response.headers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Response headers dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.chain.Response.set_header">
+<code class="descname">set_header</code><span class="sig-paren">(</span><em>header</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#Response.set_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.Response.set_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set HTTP response header.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>header</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the header name.</li>
+<li><strong>value</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the header value.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="microkubes.security.chain.Response.status">
+<code class="descname">status</code><a class="headerlink" href="#microkubes.security.chain.Response.status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Response status message.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="microkubes.security.chain.Response.status_code">
+<code class="descname">status_code</code><a class="headerlink" href="#microkubes.security.chain.Response.status_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Response status code.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.chain.Response.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#Response.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.Response.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write data to the HTTP response stream.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the data to be written to the response stream directly.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.chain.Response.write_json">
+<code class="descname">write_json</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#Response.write_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.Response.write_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes data to the response stream with <code class="docutils literal notranslate"><span class="pre">application/json</span></code> content type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> – <code class="docutils literal notranslate"><span class="pre">any</span></code>, the data to be serialized (if necessary) as JSON and written to
+the HTTP response stream.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="microkubes.security.chain.SecurityChain">
+<em class="property">class </em><code class="descclassname">microkubes.security.chain.</code><code class="descname">SecurityChain</code><span class="sig-paren">(</span><em>security_context=None</em>, <em>providers=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#SecurityChain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.SecurityChain" title="Permalink to this definition">¶</a></dt>
+<dd><p>SecurityProcessing chain. Executes the security providers with the HTTP Request and Response
+wrappers in order to process and create <code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.Auth</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Params security_context:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.SecurityContext</span></code>, the security context.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Params providers:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first"><code class="docutils literal notranslate"><span class="pre">list</span></code>, list of security providers to execute for each request. A security
+provider is a function that processes the current HTTP request so it can check for existing
+auth or in order to create one from the request values. The security provider prototype is
+as follows:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">security_provider</span><span class="p">(</span><span class="n">security_context</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">resp</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>where:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">security_context</span></code> is the current <code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.SecurityContext</span></code>.</li>
+<li><code class="docutils literal notranslate"><span class="pre">req</span></code> is the current HTTP <a class="reference internal" href="#microkubes.security.chain.Request" title="microkubes.security.chain.Request"><code class="xref py py-class docutils literal notranslate"><span class="pre">Request</span></code></a>.</li>
+<li><code class="docutils literal notranslate"><span class="pre">resp</span></code> is the current HTTP <a class="reference internal" href="#microkubes.security.chain.Response" title="microkubes.security.chain.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a>.</li>
+</ul>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="microkubes.security.chain.SecurityChain.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><em>req</em>, <em>resp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#SecurityChain.execute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.SecurityChain.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute this security chain with the given request and response.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>req</strong> – <code class="docutils literal notranslate"><span class="pre">Request</span></code>, the current HTTP Request.</li>
+<li><strong>resp</strong> – <code class="docutils literal notranslate"><span class="pre">Response</span></code>, the current HTTP Response.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#microkubes.security.chain.SecurityException" title="microkubes.security.chain.SecurityException"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecurityException</span></code></a> if an exception happens during the chain
+execution of the security providers.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.chain.SecurityChain.provider">
+<code class="descname">provider</code><span class="sig-paren">(</span><em>security_provider</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#SecurityChain.provider"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.SecurityChain.provider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a security provider to this chain.</p>
+<p>The provider is added to the end of the list of providers. The providers are executed
+sequentially in the same order as they are registered.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>security_provider</strong> – <code class="docutils literal notranslate"><span class="pre">function</span></code>, a security provider function.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">reference to this instance of <a class="reference internal" href="#microkubes.security.chain.SecurityChain" title="microkubes.security.chain.SecurityChain"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecurityChain</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.chain.SecurityChain.with_security_context">
+<code class="descname">with_security_context</code><span class="sig-paren">(</span><em>security_context</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#SecurityChain.with_security_context"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.SecurityChain.with_security_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the security context for this <a class="reference internal" href="#microkubes.security.chain.SecurityChain" title="microkubes.security.chain.SecurityChain"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecurityChain</span></code></a>.</p>
+<p>This is a builder method.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>security_context</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.SecurityContext</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">reference to this instance of <a class="reference internal" href="#microkubes.security.chain.SecurityChain" title="microkubes.security.chain.SecurityChain"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecurityChain</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="microkubes.security.chain.SecurityException">
+<em class="property">exception </em><code class="descclassname">microkubes.security.chain.</code><code class="descname">SecurityException</code><span class="sig-paren">(</span><em>message</em>, <em>status_code=500</em>, <em>headers=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#SecurityException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.SecurityException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a security error. A security error is raised while
+executing the security chain for the current request.</p>
+<p>The security exception contains additional properties that relate
+to the HTTP response that will be generated and returned to the
+client later on.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>message</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the error message.</li>
+<li><strong>status_code</strong> – <code class="docutils literal notranslate"><span class="pre">int</span></code>, HTTP status code. For example - 401 if the
+authorization is missing; 403 if an authorization was sent but the
+access is forbidden; 400 if some required parameter/header is missing
+or has wrong value.</li>
+<li><strong>headers</strong> – <code class="docutils literal notranslate"><span class="pre">dict</span></code>, additional headers to be added to the HTTP response.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="microkubes.security.chain.is_authenticated_provider">
+<code class="descclassname">microkubes.security.chain.</code><code class="descname">is_authenticated_provider</code><span class="sig-paren">(</span><em>sc</em>, <em>req</em>, <em>resp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#is_authenticated_provider"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.is_authenticated_provider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Security provider to check if the current request has been authenticated.</p>
+<p>You can add this provider to the end of the security chain to detect if the previous
+providers have been succesfull in creating authnetication for the request.</p>
+<p>Raises <a class="reference internal" href="#microkubes.security.chain.SecurityException" title="microkubes.security.chain.SecurityException"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecurityException</span></code></a> if the security context does not contain authentication.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="microkubes.security.chain.public_routes_provider">
+<code class="descclassname">microkubes.security.chain.</code><code class="descname">public_routes_provider</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#public_routes_provider"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.public_routes_provider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Security provider to allow access to resources without auth.</p>
+<p>Takes a list of <code class="docutils literal notranslate"><span class="pre">str</span></code> patterns or regexp objects to match the <code class="docutils literal notranslate"><span class="pre">Request.path</span></code> against.
+If the request path matches, the chain is broken and the request is passed through.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">function</span></code> the compiled security providers for the given public routes.</td>
+</tr>
+</tbody>
+</table>
+<p>Example usage:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">static_resources</span> <span class="o">=</span> <span class="n">public_routes_provider</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;.*.js&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;.*.css&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;.*.png&#39;</span><span class="p">)</span>
+
+<span class="n">chain</span> <span class="o">=</span> <span class="p">(</span><span class="n">SecurityChain</span><span class="p">()</span><span class="o">.</span>
+            <span class="n">with_security_context</span><span class="p">(</span><span class="n">sc</span><span class="p">)</span><span class="o">.</span>
+            <span class="n">provider</span><span class="p">(</span><span class="n">static_resources</span><span class="p">)</span><span class="o">.</span>  <span class="c1"># add it first in the chain so it cancels the rest of the providers if matches a publid resource</span>
+            <span class="n">provider</span><span class="p">(</span><span class="n">jwt_provider</span><span class="p">)</span><span class="o">.</span>
+            <span class="n">provider</span><span class="p">(</span><span class="n">oauth2_provider</span><span class="p">)</span><span class="o">.</span>
+            <span class="n">provider</span><span class="p">(</span><span class="n">saml_provider</span><span class="p">)</span><span class="o">.</span>
+            <span class="n">provider</span><span class="p">(</span><span class="n">is_authenticated_provider</span><span class="p">)</span>  <span class="c1"># we add the is_authenticated_provider last to check if any of the previous have generated authentication.</span>
+            <span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+<span class="target" id="module-microkubes.security.keys"></span><p>Tools and helpers for manipulating key files.</p>
+<p>Defines a wrapper around a key file and a store for keys retrieval.</p>
+<dl class="class">
+<dt id="microkubes.security.keys.Key">
+<em class="property">class </em><code class="descclassname">microkubes.security.keys.</code><code class="descname">Key</code><span class="sig-paren">(</span><em>key_file</em>, <em>public=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/keys.html#Key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.keys.Key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Key holds the path to the actual key file and a flag whether the key is public or private (if applicable).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>key_file</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the path to the key file.</li>
+<li><strong>public</strong> – <code class="docutils literal notranslate"><span class="pre">bool</span></code>, flag indicating whether this key is public.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#microkubes.security.keys.KeyException" title="microkubes.security.keys.KeyException"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyException</span></code></a> if the key file does not exist or is not a file.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="microkubes.security.keys.Key.load">
+<code class="descname">load</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/keys.html#Key.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.keys.Key.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries to load a key from the given file.</p>
+<p>Returns the content of the key as bytes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#microkubes.security.keys.KeyException" title="microkubes.security.keys.KeyException"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyException</span></code></a> if an error occurs during loading.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="microkubes.security.keys.KeyException">
+<em class="property">exception </em><code class="descclassname">microkubes.security.keys.</code><code class="descname">KeyException</code><a class="reference internal" href="_modules/microkubes/security/keys.html#KeyException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.keys.KeyException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents an error that occurs during loading or specifying a key.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="microkubes.security.keys.KeyStore">
+<em class="property">class </em><code class="descclassname">microkubes.security.keys.</code><code class="descname">KeyStore</code><span class="sig-paren">(</span><em>dir_path=None</em>, <em>keys=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/keys.html#KeyStore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.keys.KeyStore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads keys from a given directory or a key map (key_name =&gt; key_file).</p>
+<p>The store is being used to quickly fetch/load a key from a map of known keys.</p>
+<p>When loading the keys, the store guesses whether the key is public or not based on
+the file name:</p>
+<blockquote>
+<div><ul class="simple">
+<li>If the file name ends in “.pub” the key is flagged as public key.</li>
+<li>If the file name ends in “.pem” or does not have an extension, then the key is flagged as private.</li>
+<li>If the file ends with other extension, it is ignored and not loaded.</li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dir_path</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the directory to load keys from. Optional.</li>
+<li><strong>keys</strong> – <code class="docutils literal notranslate"><span class="pre">dict</span></code>, keys map in the form key_name =&gt; key_file. Whether the key is public/private is guessed
+based on the file name.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="microkubes.security.keys.KeyStore.add_key">
+<code class="descname">add_key</code><span class="sig-paren">(</span><em>key_name</em>, <em>key_file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/keys.html#KeyStore.add_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.keys.KeyStore.add_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a key to this <a class="reference internal" href="#microkubes.security.keys.KeyStore" title="microkubes.security.keys.KeyStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyStore</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>key_name</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the name of the key.</li>
+<li><strong>key_file</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, key file path.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.keys.KeyStore.get_key">
+<code class="descname">get_key</code><span class="sig-paren">(</span><em>key_name=None</em>, <em>public=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/keys.html#KeyStore.get_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.keys.KeyStore.get_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves a <a class="reference internal" href="#microkubes.security.keys.Key" title="microkubes.security.keys.Key"><code class="xref py py-class docutils literal notranslate"><span class="pre">Key</span></code></a> by name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key_name</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the name of the key to retrieve. If not given, the default value is <code class="docutils literal notranslate"><span class="pre">default</span></code>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#microkubes.security.keys.Key" title="microkubes.security.keys.Key"><code class="xref py py-class docutils literal notranslate"><span class="pre">Key</span></code></a> if the key is found; otherwise raises <a class="reference internal" href="#microkubes.security.keys.KeyException" title="microkubes.security.keys.KeyException"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyException</span></code></a>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.keys.KeyStore.get_private_key">
+<code class="descname">get_private_key</code><span class="sig-paren">(</span><em>key_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/keys.html#KeyStore.get_private_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.keys.KeyStore.get_private_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves a key flagged as private by its name.</p>
+<p>If the name is not given, then will attempt to retrieve the private key with name <code class="docutils literal notranslate"><span class="pre">default</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key_name</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the name of the key to retrieve. If not given, the default value is <code class="docutils literal notranslate"><span class="pre">default</span></code>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#microkubes.security.keys.Key" title="microkubes.security.keys.Key"><code class="xref py py-class docutils literal notranslate"><span class="pre">Key</span></code></a> if the key is found; otherwise raises <a class="reference internal" href="#microkubes.security.keys.KeyException" title="microkubes.security.keys.KeyException"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyException</span></code></a>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.keys.KeyStore.public_keys">
+<code class="descname">public_keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/keys.html#KeyStore.public_keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.keys.KeyStore.public_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves all of the public keys as a dict key_name =&gt; <a class="reference internal" href="#microkubes.security.keys.Key" title="microkubes.security.keys.Key"><code class="xref py py-class docutils literal notranslate"><span class="pre">Key</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-microkubes.security.jwt"></span><p>JWT security provider</p>
+<dl class="class">
+<dt id="microkubes.security.jwt.JWTProvider">
+<em class="property">class </em><code class="descclassname">microkubes.security.jwt.</code><code class="descname">JWTProvider</code><span class="sig-paren">(</span><em>key_store</em>, <em>header='Authorization'</em>, <em>auth_schema='Bearer'</em>, <em>algs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/jwt.html#JWTProvider"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.jwt.JWTProvider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements JWT decoding and validation as a security chain provider.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>key_store</strong> – <a class="reference internal" href="#microkubes.security.keys.KeyStore" title="microkubes.security.keys.KeyStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.keys.KeyStore</span></code></a>, the KeyStore to use with this provider.</li>
+<li><strong>header</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the name of the security header. Default is <code class="docutils literal notranslate"><span class="pre">Authorization</span></code>.</li>
+<li><strong>auth_schema</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the format of the security header. The default schema is <code class="docutils literal notranslate"><span class="pre">Bearer</span></code> token.</li>
+<li><strong>algs</strong> – <code class="docutils literal notranslate"><span class="pre">list</span></code>, list of supported hash signing algorithms. Default is <code class="docutils literal notranslate"><span class="pre">[&quot;HS256&quot;,</span> <span class="pre">&quot;RS256&quot;]</span></code>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="microkubes.security.jwt.JWTProvider.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><em>ctx</em>, <em>req</em>, <em>resp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/jwt.html#JWTProvider.execute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.jwt.JWTProvider.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute the security chain provider.</p>
+<p>Checks for security header containing JWT token. If found, the token is decoded and
+validated with the keys provided by the <code class="docutils literal notranslate"><span class="pre">KeyStore</span></code>. If the token contains the optional
+key ID header (<code class="docutils literal notranslate"><span class="pre">kid</span></code>), then the decoding will be attempted with the specified key (if
+such key can be found with the registered <code class="docutils literal notranslate"><span class="pre">KeyStore</span></code>).</p>
+<p>If the attempted decoding and validation of the JWT is successful, then <code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.auth.Auth</span></code>
+is created and set in the current security context.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ctx</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.auth.SecurityContext</span></code>, current <code class="docutils literal notranslate"><span class="pre">SecurityContext</span></code>.</li>
+<li><strong>req</strong> – <a class="reference internal" href="#microkubes.security.chain.Request" title="microkubes.security.chain.Request"><code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.chain.Request</span></code></a>, wrapped HTTP Request.</li>
+<li><strong>resp</strong> – <a class="reference internal" href="#microkubes.security.chain.Response" title="microkubes.security.chain.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.chain.Response</span></code></a>, wrapped HTTP Response.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-microkubes.security.oauth2"></span><p>OAuth2 security provider.</p>
+<dl class="class">
+<dt id="microkubes.security.oauth2.OAuth2Provider">
+<em class="property">class </em><code class="descclassname">microkubes.security.oauth2.</code><code class="descname">OAuth2Provider</code><span class="sig-paren">(</span><em>key_store</em>, <em>algs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/oauth2.html#OAuth2Provider"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.oauth2.OAuth2Provider" title="Permalink to this definition">¶</a></dt>
+<dd><p>OAuth2 security chain provider.</p>
+<p>The OAuth2 authenticated requests MUST contain the OAuth2 token.
+Microkubes tokens are all JWTs and we prefer Authorization: Bearer schema.</p>
+<p>The OAuth2 provider is basically JWTProvider and re-uses the same decoding
+and validation flow.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>key_store</strong> – <a class="reference internal" href="#microkubes.security.keys.KeyStore" title="microkubes.security.keys.KeyStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.keys.KeyStore</span></code></a>, the key store to be used
+with this security provider.</li>
+<li><strong>algs</strong> – <code class="docutils literal notranslate"><span class="pre">list</span></code>, list of supported key signing algorithms. By default <code class="docutils literal notranslate"><span class="pre">RS256</span></code>
+and <code class="docutils literal notranslate"><span class="pre">HS256</span></code> are supported.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<span class="target" id="module-microkubes.security.flask"></span><p>Flask decorators and helpers to set up Microkubes security for Flask apps.</p>
+<dl class="class">
+<dt id="microkubes.security.flask.FlaskSecurity">
+<em class="property">class </em><code class="descclassname">microkubes.security.flask.</code><code class="descname">FlaskSecurity</code><span class="sig-paren">(</span><em>context=None</em>, <em>key_store=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/flask.html#FlaskSecurity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.flask.FlaskSecurity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flask security builder.</p>
+<p>Builds new Microkubes enabled security for Flask applications.
+In the background it generates a <code class="docutils literal notranslate"><span class="pre">SecurityChain</span></code> and <a class="reference internal" href="#microkubes.security.flask.Security" title="microkubes.security.flask.Security"><code class="xref py py-class docutils literal notranslate"><span class="pre">Security</span></code></a> that can be
+used to secure the Flask’s endpoints.</p>
+<p>Example setup:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+<span class="kn">from</span> <span class="nn">microkubes.security</span> <span class="kn">import</span> <span class="n">FlaskSecurity</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">sec</span> <span class="o">=</span> <span class="p">(</span><span class="n">FlaskSecurity</span><span class="p">()</span><span class="o">.</span>  <span class="c1"># new security with default secuity context</span>
+        <span class="n">keys_dir</span><span class="p">(</span><span class="s1">&#39;./keys&#39;</span><span class="p">)</span><span class="o">.</span>  <span class="c1"># the RSA keys are in this directory</span>
+        <span class="n">static_files</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;.*\.js&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;.*\.css&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;.*\.png&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;.*\.jpg&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;.*\.jpeg&#39;</span><span class="p">)</span><span class="o">.</span> <span class="c1"># ignore these</span>
+        <span class="n">public_route</span><span class="p">(</span><span class="s1">&#39;/public/.*&#39;</span><span class="p">)</span><span class="o">.</span>  <span class="c1"># ignore this too</span>
+        <span class="n">jwt</span><span class="p">()</span><span class="o">.</span>  <span class="c1"># Support JWT</span>
+        <span class="n">oauth2</span><span class="p">()</span><span class="o">.</span>  <span class="c1"># Support OAuth2</span>
+        <span class="n">build</span><span class="p">())</span>  <span class="c1"># Finally, build the security</span>
+
+<span class="nd">@app.route</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+<span class="nd">@sec.secured</span>
+<span class="k">def</span> <span class="nf">hello_world</span><span class="p">():</span>
+    <span class="k">return</span> <span class="s1">&#39;hello world&#39;</span>
+</pre></div>
+</div>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>context</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.auth.SecurityContext</span></code> - the security context to be used.
+By default <a class="reference internal" href="#microkubes.security.flask.FlaskSecurityContext" title="microkubes.security.flask.FlaskSecurityContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">FlaskSecurityContext</span></code></a> is used.</li>
+<li><strong>key_store</strong> – <a class="reference internal" href="#microkubes.security.keys.KeyStore" title="microkubes.security.keys.KeyStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.keys.KeyStore</span></code></a>, <code class="docutils literal notranslate"><span class="pre">KeyStore</span></code> instance.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="microkubes.security.flask.FlaskSecurity.add_provider">
+<code class="descname">add_provider</code><span class="sig-paren">(</span><em>provider</em>, <em>position='last'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/flask.html#FlaskSecurity.add_provider"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.flask.FlaskSecurity.add_provider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add custom security provider to the security chain.</p>
+<p>The chain executes multiple providers, in order, when processing a request.
+This method adds new provider to the security chain’s providers list.</p>
+<p>Because there are some defult providers that are set up in a certain order, you can provide
+a <code class="docutils literal notranslate"><span class="pre">position</span></code> and place the custom provider anuwhere in the chain.
+If not given, the provider is appended near the end of the list (the provider that checks if
+the request is authenticated is always last).</p>
+<p>In general, these are the available positions, and corresponding placement for the providers:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="43%" />
+<col width="49%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>seq</td>
+<td>POSITION</td>
+<td>PROVIDERS</td>
+</tr>
+<tr class="row-even"><td>1</td>
+<td>first</td>
+<td>custom providers</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td>N/A</td>
+<td>public_routes</td>
+</tr>
+<tr class="row-even"><td>3</td>
+<td>before_jwt, after_public</td>
+<td>custom providers</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+<td>N/A</td>
+<td>jwt_provider</td>
+</tr>
+<tr class="row-even"><td>5</td>
+<td>after_jwt, before_oauth2</td>
+<td>custom providers</td>
+</tr>
+<tr class="row-odd"><td>6</td>
+<td>N/A</td>
+<td>oauth2_provider</td>
+</tr>
+<tr class="row-even"><td>7</td>
+<td>last</td>
+<td>custom providers</td>
+</tr>
+<tr class="row-odd"><td>8</td>
+<td>N/A</td>
+<td>is_authenticated_provider</td>
+</tr>
+<tr class="row-even"><td>9</td>
+<td>final</td>
+<td>custom providers</td>
+</tr>
+</tbody>
+</table>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>provider</strong> – <code class="docutils literal notranslate"><span class="pre">function</span></code>, the security provider to add</li>
+<li><strong>position</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, at which position in the chain to add the provider. One of <code class="docutils literal notranslate"><span class="pre">first</span></code>,
+<code class="docutils literal notranslate"><span class="pre">before_jwt</span></code>, <code class="docutils literal notranslate"><span class="pre">after_public</span></code>, <code class="docutils literal notranslate"><span class="pre">after_jwt</span></code>, <code class="docutils literal notranslate"><span class="pre">before_oauth2</span></code>, <code class="docutils literal notranslate"><span class="pre">last</span></code> and <code class="docutils literal notranslate"><span class="pre">final</span></code> is allowed. 
+Default is <code class="docutils literal notranslate"><span class="pre">last</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#microkubes.security.flask.FlaskSecurity" title="microkubes.security.flask.FlaskSecurity"><code class="xref py py-class docutils literal notranslate"><span class="pre">FlaskSecurity</span></code></a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.flask.FlaskSecurity.build">
+<code class="descname">build</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/flask.html#FlaskSecurity.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.flask.FlaskSecurity.build" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a <code class="docutils literal notranslate"><span class="pre">Security</span></code> from the configured values.</p>
+<p>It builds a security chain and configures a new security to be used in flask apps.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#microkubes.security.flask.Security" title="microkubes.security.flask.Security"><code class="xref py py-class docutils literal notranslate"><span class="pre">Security</span></code></a>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.flask.FlaskSecurity.build_chain">
+<code class="descname">build_chain</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/flask.html#FlaskSecurity.build_chain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.flask.FlaskSecurity.build_chain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a <a class="reference internal" href="#microkubes.security.chain.SecurityChain" title="microkubes.security.chain.SecurityChain"><code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.chain.SecurityChain</span></code></a> from the configured values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the <a class="reference internal" href="#microkubes.security.chain.SecurityChain" title="microkubes.security.chain.SecurityChain"><code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.chain.SecurityChain</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.flask.FlaskSecurity.jwt">
+<code class="descname">jwt</code><span class="sig-paren">(</span><em>header='Authorization'</em>, <em>schema='Bearer'</em>, <em>algs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/flask.html#FlaskSecurity.jwt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.flask.FlaskSecurity.jwt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup JWT security provider.</p>
+<p>This provider tries to decode and create auth from a JWT in the HTTP request.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>header</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the name of the HTTP auth header. Default is <code class="docutils literal notranslate"><span class="pre">Authorization</span></code>.</li>
+<li><strong>schema</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the auth schema used for the auth HTTP header. By default this is <code class="docutils literal notranslate"><span class="pre">Bearer</span></code> token.</li>
+<li><strong>algs</strong> – <code class="docutils literal notranslate"><span class="pre">list</span></code>, list of accepted signing algorithms. If not specified assumes <code class="docutils literal notranslate"><span class="pre">HS256</span></code> and <code class="docutils literal notranslate"><span class="pre">RS256</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#microkubes.security.flask.FlaskSecurity" title="microkubes.security.flask.FlaskSecurity"><code class="xref py py-class docutils literal notranslate"><span class="pre">FlaskSecurity</span></code></a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.flask.FlaskSecurity.keys_dir">
+<code class="descname">keys_dir</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/flask.html#FlaskSecurity.keys_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.flask.FlaskSecurity.keys_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the keys for the <code class="docutils literal notranslate"><span class="pre">KeyStore</span></code> from this directory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, keys directory path.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#microkubes.security.flask.FlaskSecurity" title="microkubes.security.flask.FlaskSecurity"><code class="xref py py-class docutils literal notranslate"><span class="pre">FlaskSecurity</span></code></a>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.flask.FlaskSecurity.oauth2">
+<code class="descname">oauth2</code><span class="sig-paren">(</span><em>algs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/flask.html#FlaskSecurity.oauth2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.flask.FlaskSecurity.oauth2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup OAuth2 security provider.</p>
+<p>This provider will try to decode and validate an OAuth2 token. All tokens with Microkubes are
+self-contained and are JWTs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>algs</strong> – <code class="docutils literal notranslate"><span class="pre">list</span></code>, list of accepted signing algorithms. If not specified assumes <code class="docutils literal notranslate"><span class="pre">HS256</span></code> and <code class="docutils literal notranslate"><span class="pre">RS256</span></code>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#microkubes.security.flask.FlaskSecurity" title="microkubes.security.flask.FlaskSecurity"><code class="xref py py-class docutils literal notranslate"><span class="pre">FlaskSecurity</span></code></a>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.flask.FlaskSecurity.public_route">
+<code class="descname">public_route</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/flask.html#FlaskSecurity.public_route"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.flask.FlaskSecurity.public_route" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add public routes that will be ignored and not checked by the security.</p>
+<p>A public route is a HTTP request path that is publicly accessible and does not need authorization
+for access.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> – <p>variadic args, <code class="docutils literal notranslate"><span class="pre">list</span></code> of exact routes or regexp patterns to match against. All routes
+are treated as regular expression pattern, so:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">/public/resource</span></code> matches exactly this pattern</li>
+<li><code class="docutils literal notranslate"><span class="pre">/public/.*</span></code> matches both <code class="docutils literal notranslate"><span class="pre">/public/a</span></code> and <code class="docutils literal notranslate"><span class="pre">/public/file.js</span></code> but not <code class="docutils literal notranslate"><span class="pre">/protected/file</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">.*\.js</span></code> matches all js files - both <code class="docutils literal notranslate"><span class="pre">/public/file.js</span></code> and <code class="docutils literal notranslate"><span class="pre">/protected/file.js</span></code></li>
+</ul>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#microkubes.security.flask.FlaskSecurity" title="microkubes.security.flask.FlaskSecurity"><code class="xref py py-class docutils literal notranslate"><span class="pre">FlaskSecurity</span></code></a>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.flask.FlaskSecurity.static_files">
+<code class="descname">static_files</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/flask.html#FlaskSecurity.static_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.flask.FlaskSecurity.static_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for <code class="docutils literal notranslate"><span class="pre">public_routes</span></code> method.</p>
+<p>The only difference is a semantic one, to allow more readablity in the code.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.flask.FlaskSecurity.use_key">
+<code class="descname">use_key</code><span class="sig-paren">(</span><em>key_name</em>, <em>key_file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/flask.html#FlaskSecurity.use_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.flask.FlaskSecurity.use_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add mapped key to the <code class="docutils literal notranslate"><span class="pre">KeyStore</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>key_name</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the name (id) of the key.</li>
+<li><strong>key_file</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, path to the key file.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#microkubes.security.flask.FlaskSecurity" title="microkubes.security.flask.FlaskSecurity"><code class="xref py py-class docutils literal notranslate"><span class="pre">FlaskSecurity</span></code></a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="microkubes.security.flask.FlaskSecurityContext">
+<em class="property">class </em><code class="descclassname">microkubes.security.flask.</code><code class="descname">FlaskSecurityContext</code><a class="reference internal" href="_modules/microkubes/security/flask.html#FlaskSecurityContext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.flask.FlaskSecurityContext" title="Permalink to this definition">¶</a></dt>
+<dd><p>SecurityContext that wraps Flask’s <code class="docutils literal notranslate"><span class="pre">g</span></code> object. Request Scoped.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="microkubes.security.flask.FlaskSecurityError">
+<em class="property">exception </em><code class="descclassname">microkubes.security.flask.</code><code class="descname">FlaskSecurityError</code><a class="reference internal" href="_modules/microkubes/security/flask.html#FlaskSecurityError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.flask.FlaskSecurityError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Error during security setup for Flask apps.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="microkubes.security.flask.Security">
+<em class="property">class </em><code class="descclassname">microkubes.security.flask.</code><code class="descname">Security</code><span class="sig-paren">(</span><em>security_chain</em>, <em>context</em>, <em>json_response=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/flask.html#Security"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.flask.Security" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main security object.</p>
+<p>Contains the configured <a class="reference internal" href="#microkubes.security.chain.SecurityChain" title="microkubes.security.chain.SecurityChain"><code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.chain.SecurityChain</span></code></a> and
+executes it for every secured action.</p>
+<p>A secured action is an action decorated with <a class="reference internal" href="#microkubes.security.flask.Security.secured" title="microkubes.security.flask.Security.secured"><code class="xref py py-func docutils literal notranslate"><span class="pre">Security.secured()</span></code></a>.</p>
+<p>Given that we have configured a SecurityChain, we can protect/secure Flask actions like this:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sec</span> <span class="o">=</span> <span class="n">Security</span><span class="p">(</span><span class="n">security_chain</span><span class="o">=</span><span class="n">chain</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">FlaskSecurityContext</span><span class="p">())</span>
+
+<span class="nd">@app.route</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="nd">@sec.secured</span>
+<span class="k">def</span> <span class="nf">my_action</span><span class="p">():</span>
+    <span class="k">return</span> <span class="s1">&#39;My secured action.&#39;</span>
+</pre></div>
+</div>
+</div></blockquote>
+<dl class="method">
+<dt id="microkubes.security.flask.Security.check">
+<code class="descname">check</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/flask.html#Security.check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.flask.Security.check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the check for the given Request in the current SecurityContext.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">tuple</span></code>: <code class="docutils literal notranslate"><span class="pre">(allowed,</span> <span class="pre">flask_response)</span></code>, where:
+* <code class="docutils literal notranslate"><span class="pre">allowed</span></code> is <code class="docutils literal notranslate"><span class="pre">bool</span></code> indicating whether the request is allowed to proceed.
+* <code class="docutils literal notranslate"><span class="pre">flask_response</span></code> - <code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code> the Flask response. May be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.flask.Security.secured">
+<code class="descname">secured</code><span class="sig-paren">(</span><em>decorated</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/flask.html#Security.secured"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.flask.Security.secured" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator for security check.</p>
+<p>When decorated with <code class="docutils literal notranslate"><span class="pre">&#64;security.secured</span></code>, the decorated method will not be called
+unless the security check passes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>decorated</strong> – <code class="docutils literal notranslate"><span class="pre">function</span></code>, the decorated method.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">function</span></code>, the security decorator for the given method or function..</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">microkubes-python</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Microkubes Python library API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to microkubes-python’s documentation!</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Keitaro <info@keitaro.com>.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/api.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

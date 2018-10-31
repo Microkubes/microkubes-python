@@ -1,0 +1,267 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>microkubes.gateway &#8212; microkubes-python 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for microkubes.gateway</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;API Gateway tools for Microkubes.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="k">import</span> <span class="n">urljoin</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+
+<div class="viewcode-block" id="RegistrationException"><a class="viewcode-back" href="../../api.html#microkubes.gateway.RegistrationException">[docs]</a><span class="k">class</span> <span class="nc">RegistrationException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;RegistrationException represents an exception that occured during the process</span>
+<span class="sd">    of self-registration on the API Gateway.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Registrator"><a class="viewcode-back" href="../../api.html#microkubes.gateway.Registrator">[docs]</a><span class="k">class</span> <span class="nc">Registrator</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Registers service to an API Gateway.</span>
+
+<span class="sd">    This is a base class intended to implement the general behaviour for registration</span>
+<span class="sd">    a service on the API Gateway.</span>
+
+<span class="sd">    :param gw_admin_url: ``str``, the API Gateway base url for admin REST actions. The</span>
+<span class="sd">        default value is ``&quot;http://gateway:8001&quot;``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gw_admin_url</span><span class="o">=</span><span class="s1">&#39;http://gateway:8001&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gw_admin_url</span> <span class="o">=</span> <span class="n">gw_admin_url</span>
+
+    <span class="k">def</span> <span class="nf">_get_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gw_admin_url</span>
+        <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">path</span>
+
+        <span class="n">trail_slash</span> <span class="o">=</span> <span class="n">url</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="n">url</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">trail_slash</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">url</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">params</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">+=</span> <span class="s1">&#39;?&#39;</span> <span class="o">+</span> <span class="s1">&#39;&amp;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">())])</span>
+
+        <span class="k">return</span> <span class="n">url</span>
+
+<div class="viewcode-block" id="Registrator.register"><a class="viewcode-back" href="../../api.html#microkubes.gateway.Registrator.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Register a service with the API Gateway.</span>
+
+<span class="sd">        :param name: ``str``, the name of the service. This is required.</span>
+<span class="sd">        :param paths: ``list``, list of paths to match the request path agaisnt. If any match,</span>
+<span class="sd">            the request will be routed to the registered API. This parameter is required.</span>
+<span class="sd">        :param host: ``str``, the actual (LAN) hostname of the service. This parameter is requred.</span>
+<span class="sd">        :param port: ``int``, service port. The incoming trafic for the service will be routed to</span>
+<span class="sd">            this port on the service ``host``.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;service name must be provided&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;paths&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;paths must be set with at least one path&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;host&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;host (vhost) must be provided&#39;</span><span class="p">)</span>
+
+        <span class="n">svc_def</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;port&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;port&#39;</span><span class="p">,</span> <span class="mi">8080</span><span class="p">)),</span>
+            <span class="s1">&#39;paths&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;paths&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;host&#39;</span><span class="p">],</span>
+        <span class="p">}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">register_service</span><span class="p">(</span><span class="n">svc_def</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">RegistrationException</span> <span class="kn">from</span> <span class="nn">e</span></div>
+
+<div class="viewcode-block" id="Registrator.register_service"><a class="viewcode-back" href="../../api.html#microkubes.gateway.Registrator.register_service">[docs]</a>    <span class="k">def</span> <span class="nf">register_service</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service_def</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Actual registration of the service with the specific gateway.</span>
+
+<span class="sd">        This method is intended to be overriden in a subclass to actually register</span>
+<span class="sd">        the service with the specific gateway.</span>
+
+<span class="sd">        :param service_def: ``dict``, contains the validated service definition. The</span>
+<span class="sd">            following properties are guaranteed:</span>
+
+<span class="sd">            - ``name`` - service name</span>
+<span class="sd">            - ``port`` - service actual port</span>
+<span class="sd">            - ``host`` - service actual host</span>
+<span class="sd">            - ``paths`` - list of path patterns to register the service with</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="KongGatewayRegistrator"><a class="viewcode-back" href="../../api.html#microkubes.gateway.KongGatewayRegistrator">[docs]</a><span class="k">class</span> <span class="nc">KongGatewayRegistrator</span><span class="p">(</span><span class="n">Registrator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Registrator for Kong API Gateway.</span>
+
+<span class="sd">    Registers services with Kong Gateway using the Kong admin API.</span>
+
+<span class="sd">    :param gw_admin_url: ``str``, Kong Admin API base URL.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gw_admin_url</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">KongGatewayRegistrator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">gw_admin_url</span><span class="o">=</span><span class="n">gw_admin_url</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_to_api_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service_def</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">service_def</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;uris&#39;</span><span class="p">:</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">service_def</span><span class="p">[</span><span class="s1">&#39;paths&#39;</span><span class="p">]),</span>
+            <span class="s1">&#39;upstream_url&#39;</span><span class="p">:</span> <span class="s1">&#39;http://</span><span class="si">%s</span><span class="s1">:</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">service_def</span><span class="p">[</span><span class="s1">&#39;host&#39;</span><span class="p">],</span> <span class="n">service_def</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">]),</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_get_api_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api_name</span><span class="p">):</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_url</span><span class="p">(</span><span class="s1">&#39;/apis/&#39;</span> <span class="o">+</span> <span class="n">api_name</span><span class="p">))</span>
+        <span class="nb">print</span> <span class="p">(</span><span class="s2">&quot; RESP CODE: &quot;</span><span class="p">,</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">raise</span> <span class="n">RegistrationException</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;message&#39;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_add_api</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api_def</span><span class="p">):</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_url</span><span class="p">(</span><span class="s1">&#39;/apis/&#39;</span><span class="p">),</span> <span class="n">json</span><span class="o">=</span><span class="n">api_def</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">201</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">RegistrationException</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;message&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_update_api</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registered_api</span><span class="p">,</span> <span class="n">api_def</span><span class="p">):</span>
+        <span class="n">uris</span> <span class="o">=</span> <span class="n">registered_api</span><span class="p">[</span><span class="s1">&#39;uris&#39;</span><span class="p">]</span>
+        <span class="n">upstream_url</span> <span class="o">=</span> <span class="n">registered_api</span><span class="p">[</span><span class="s1">&#39;upstream_url&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">api_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uris&#39;</span><span class="p">):</span>
+            <span class="n">uris</span> <span class="o">=</span> <span class="n">api_def</span><span class="p">[</span><span class="s1">&#39;uris&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">api_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;upstream_url&#39;</span><span class="p">):</span>
+            <span class="n">upstream_url</span> <span class="o">=</span> <span class="n">api_def</span><span class="p">[</span><span class="s1">&#39;upstream_url&#39;</span><span class="p">]</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">registered_api</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;uris&#39;</span><span class="p">:</span> <span class="n">uris</span><span class="p">,</span>
+            <span class="s1">&#39;upstream_url&#39;</span><span class="p">:</span> <span class="n">upstream_url</span>
+        <span class="p">}</span>
+
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_url</span><span class="p">(</span><span class="s1">&#39;/apis/&#39;</span> <span class="o">+</span> <span class="n">api_def</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]),</span> <span class="n">json</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">RegistrationException</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;message&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+<div class="viewcode-block" id="KongGatewayRegistrator.register_service"><a class="viewcode-back" href="../../api.html#microkubes.gateway.KongGatewayRegistrator.register_service">[docs]</a>    <span class="k">def</span> <span class="nf">register_service</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service_def</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Does an actual registration of the service with the Kong API Gateway.</span>
+
+<span class="sd">        If the service already exists and is registered with the gateway, then the confguration</span>
+<span class="sd">        is updated with the given ``service_def``. Otherwise, the service is added to the gateway</span>
+<span class="sd">        registry.</span>
+
+<span class="sd">        :returns: ``dict``, the JSON response from the gateway itself. Refer to the Kong</span>
+<span class="sd">            documentation for the actual response schema.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">api_def</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_api_params</span><span class="p">(</span><span class="n">service_def</span><span class="p">)</span>
+
+        <span class="n">reg_api</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_api_by_name</span><span class="p">(</span><span class="n">api_def</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">reg_api</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_api</span><span class="p">(</span><span class="n">api_def</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_api</span><span class="p">(</span><span class="n">reg_api</span><span class="p">,</span> <span class="n">api_def</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">microkubes-python</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Microkubes Python library API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Keitaro <info@keitaro.com>.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

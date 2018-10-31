@@ -1,0 +1,246 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>microkubes.security.keys &#8212; microkubes-python 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for microkubes.security.keys</h1><div class="highlight"><pre>
+<span></span>
+<span class="sd">&quot;&quot;&quot;Tools and helpers for manipulating key files.</span>
+
+<span class="sd">Defines a wrapper around a key file and a store for keys retrieval.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">listdir</span><span class="p">,</span> <span class="n">sep</span> <span class="k">as</span> <span class="n">path_sep</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">isdir</span><span class="p">,</span> <span class="n">isfile</span><span class="p">,</span> <span class="n">abspath</span><span class="p">,</span> <span class="n">basename</span>
+
+
+<div class="viewcode-block" id="KeyException"><a class="viewcode-back" href="../../../api.html#microkubes.security.keys.KeyException">[docs]</a><span class="k">class</span> <span class="nc">KeyException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents an error that occurs during loading or specifying a key.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Key"><a class="viewcode-back" href="../../../api.html#microkubes.security.keys.Key">[docs]</a><span class="k">class</span> <span class="nc">Key</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Key holds the path to the actual key file and a flag whether the key is public or private (if applicable).</span>
+
+<span class="sd">    :param key_file: ``str``, the path to the key file.</span>
+<span class="sd">    :param public: ``bool``, flag indicating whether this key is public.</span>
+
+<span class="sd">    :raises: :class:`KeyException` if the key file does not exist or is not a file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_file</span><span class="p">,</span> <span class="n">public</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">public</span> <span class="o">=</span> <span class="n">public</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key_file</span> <span class="o">=</span> <span class="n">key_file</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key_file</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">KeyException</span><span class="p">(</span><span class="s1">&#39;File </span><span class="si">%s</span><span class="s1"> does not exist or is not a file.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_file</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Key.load"><a class="viewcode-back" href="../../../api.html#microkubes.security.keys.Key.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tries to load a key from the given file.</span>
+
+<span class="sd">        Returns the content of the key as bytes.</span>
+
+<span class="sd">        :raises: :class:`KeyException` if an error occurs during loading.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">kf</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">kf</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">read_err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">KeyException</span> <span class="kn">from</span> <span class="nn">read_err</span></div></div>
+
+
+<div class="viewcode-block" id="KeyStore"><a class="viewcode-back" href="../../../api.html#microkubes.security.keys.KeyStore">[docs]</a><span class="k">class</span> <span class="nc">KeyStore</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Loads keys from a given directory or a key map (key_name =&gt; key_file).</span>
+
+<span class="sd">    The store is being used to quickly fetch/load a key from a map of known keys.</span>
+
+<span class="sd">    When loading the keys, the store guesses whether the key is public or not based on</span>
+<span class="sd">    the file name:</span>
+
+<span class="sd">        * If the file name ends in &quot;.pub&quot; the key is flagged as public key.</span>
+<span class="sd">        * If the file name ends in &quot;.pem&quot; or does not have an extension, then the key is flagged as private.</span>
+<span class="sd">        * If the file ends with other extension, it is ignored and not loaded.</span>
+
+<span class="sd">    :param dir_path: ``str``, the directory to load keys from. Optional.</span>
+<span class="sd">    :param keys: ``dict``, keys map in the form key_name =&gt; key_file. Whether the key is public/private is guessed</span>
+<span class="sd">        based on the file name.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dir_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">dir_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_keys_from_dir</span><span class="p">(</span><span class="n">dir_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">keys</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_keys_from_map</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+
+<div class="viewcode-block" id="KeyStore.get_key"><a class="viewcode-back" href="../../../api.html#microkubes.security.keys.KeyStore.get_key">[docs]</a>    <span class="k">def</span> <span class="nf">get_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">public</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrieves a :class:`Key` by name.</span>
+
+<span class="sd">        :param key_name: ``str``, the name of the key to retrieve. If not given, the default value is ``default``.</span>
+
+<span class="sd">        :returns: :class:`Key` if the key is found; otherwise raises :class:`KeyException`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">key_name</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+        <span class="n">key_name</span> <span class="o">=</span> <span class="n">key_name</span> <span class="o">+</span> <span class="s1">&#39;.pub&#39;</span> <span class="k">if</span> <span class="n">public</span> <span class="k">else</span> <span class="n">key_name</span>
+
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">KeyException</span><span class="p">(</span><span class="s1">&#39;No such key: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">key_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">key</span></div>
+
+<div class="viewcode-block" id="KeyStore.get_private_key"><a class="viewcode-back" href="../../../api.html#microkubes.security.keys.KeyStore.get_private_key">[docs]</a>    <span class="k">def</span> <span class="nf">get_private_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrieves a key flagged as private by its name.</span>
+
+<span class="sd">        If the name is not given, then will attempt to retrieve the private key with name ``default``.</span>
+
+<span class="sd">        :param key_name: ``str``, the name of the key to retrieve. If not given, the default value is ``default``.</span>
+
+<span class="sd">        :returns: :class:`Key` if the key is found; otherwise raises :class:`KeyException`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_key</span><span class="p">(</span><span class="n">key_name</span><span class="o">=</span><span class="n">key_name</span><span class="p">,</span> <span class="n">public</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">public</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">KeyException</span><span class="p">(</span><span class="s1">&#39;No such private key: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">key_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">key</span></div>
+
+<div class="viewcode-block" id="KeyStore.public_keys"><a class="viewcode-back" href="../../../api.html#microkubes.security.keys.KeyStore.public_keys">[docs]</a>    <span class="k">def</span> <span class="nf">public_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrieves all of the public keys as a dict key_name =&gt; :class:`Key`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">key_name</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]:</span> <span class="n">key</span> <span class="k">for</span> <span class="n">key_name</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">public</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="KeyStore.add_key"><a class="viewcode-back" href="../../../api.html#microkubes.security.keys.KeyStore.add_key">[docs]</a>    <span class="k">def</span> <span class="nf">add_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_name</span><span class="p">,</span> <span class="n">key_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a key to this :class:`KeyStore`.</span>
+
+<span class="sd">        :param key_name: ``str``, the name of the key.</span>
+<span class="sd">        :param key_file: ``str``, key file path.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_keys_from_map</span><span class="p">({</span><span class="n">key_name</span><span class="p">:</span> <span class="n">key_file</span><span class="p">})</span></div>
+
+    <span class="k">def</span> <span class="nf">_load_keys_from_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dir_path</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Loading from DIR: &#39;</span><span class="p">,</span> <span class="n">dir_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">isdir</span><span class="p">(</span><span class="n">dir_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">KeyException</span><span class="p">(</span><span class="s1">&#39;Path </span><span class="si">%s</span><span class="s1"> is not a directory.&#39;</span> <span class="o">%</span> <span class="n">dir_path</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">file_name</span> <span class="ow">in</span> <span class="n">listdir</span><span class="p">(</span><span class="n">dir_path</span><span class="p">):</span>
+            <span class="n">abs_file_name</span> <span class="o">=</span> <span class="n">abspath</span><span class="p">(</span><span class="n">dir_path</span> <span class="o">+</span> <span class="n">path_sep</span> <span class="o">+</span> <span class="n">file_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">isfile</span><span class="p">(</span><span class="n">abs_file_name</span><span class="p">):</span>
+                <span class="n">key_name</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">abs_file_name</span><span class="p">)</span>
+                <span class="n">lwr_name</span> <span class="o">=</span> <span class="n">key_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">lwr_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.pub&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="n">key_name</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.pub&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Key</span><span class="p">(</span><span class="n">abs_file_name</span><span class="p">,</span> <span class="n">public</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">lwr_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.pem&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="s1">&#39;.&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lwr_name</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="n">key_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Key</span><span class="p">(</span><span class="n">abs_file_name</span><span class="p">,</span> <span class="n">public</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_load_keys_from_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key_name</span><span class="p">,</span> <span class="n">key_file</span> <span class="ow">in</span> <span class="n">keys</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">isfile</span><span class="p">(</span><span class="n">key_file</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">KeyException</span><span class="p">(</span><span class="s1">&#39;Key file </span><span class="si">%s</span><span class="s1"> does not exist or it is not a file.&#39;</span> <span class="o">%</span> <span class="n">key_file</span><span class="p">)</span>
+            <span class="n">abs_key_file</span> <span class="o">=</span> <span class="n">abspath</span><span class="p">(</span><span class="n">key_file</span><span class="p">)</span>
+            <span class="n">base_name</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">abs_key_file</span><span class="p">)</span>
+            <span class="n">priv_key</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">base_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.pub&#39;</span><span class="p">):</span>
+                <span class="n">priv_key</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">key_name</span> <span class="o">=</span> <span class="n">key_name</span> <span class="k">if</span> <span class="n">priv_key</span> <span class="k">else</span> <span class="n">key_name</span> <span class="o">+</span> <span class="s1">&#39;.pub&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="n">key_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">Key</span><span class="p">(</span><span class="n">abs_key_file</span><span class="p">,</span> <span class="n">public</span><span class="o">=</span><span class="ow">not</span> <span class="n">priv_key</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">microkubes-python</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">Microkubes Python library API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Keitaro <info@keitaro.com>.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

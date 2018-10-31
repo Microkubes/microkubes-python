@@ -35,7 +35,7 @@ class Security:
     Contains the configured :class:`microkubes.security.chain.SecurityChain` and
     executes it for every secured action.
 
-    A secured action is an action decorated with :method:`Security.secured`.
+    A secured action is an action decorated with :func:`Security.secured`.
 
     Given that we have configured a SecurityChain, we can protect/secure Flask actions like this:
 

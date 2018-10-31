@@ -1,5 +1,15 @@
-"""Security API.
+"""Security Auth model and SecurityContext API.
 """
+
+
+from threading import local as thread_local
+
+has_contextvars = False
+try:
+    from contextvars import ContextVar
+    has_contextvars = True
+except ImportError:
+    pass
 
 
 class Auth:
@@ -41,4 +51,28 @@ class SecurityContext:
 
     def has_auth(self):
         return has_auth(self.local_context)
-    
+
+
+class ThreadLocalSecurityContext(SecurityContext):
+
+    def __init__(self):
+        super(ThreadLocalSecurityContext, self).__init__(thread_local())
+
+
+if has_contextvars:
+    ctxvar_local_context = ContextVar("local_context", {})
+
+    class _local_context_proxy:
+
+        def __getattr__(self, name):
+            return ctxvar_local_context.get().get(name)
+
+        def __setattr__(self, name, value):
+            ctxvar_local_context.get()[name] = value
+
+    _local_context = _local_context_proxy()
+
+    class ContextvarsSecurityContext(SecurityContext):
+
+        def __init__(self):
+            super(ContextvarsSecurityContext, self).__init__(_local_context)

@@ -82,7 +82,7 @@ def test_jwt_pass(get_header_mock):
         jwt_provider = JWTProvider(key_store=key_store)
 
         local_context = local() # Thread-Local underlying local context
-       
+
         context = SecurityContext(local_context=local_context)
 
         req_object = local()

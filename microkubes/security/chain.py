@@ -1,6 +1,10 @@
+"""SecurityChain implementation.
+"""
+
 
 import json
 import re
+from io import StringIO
 
 
 _REGEX_TYPE = type(re.compile('_'))
@@ -15,7 +19,7 @@ class SecurityException(Exception):
     client later on.
 
     :param message: ``str``, the error message.
-    :param status_code: ``int``, HTTP status code. For example - 401 if the 
+    :param status_code: ``int``, HTTP status code. For example - 401 if the
         authorization is missing; 403 if an authorization was sent but the
         access is forbidden; 400 if some required parameter/header is missing
         or has wrong value.
@@ -52,7 +56,7 @@ class Request:
     """
     def __init__(self, request):
         self.wrapped_request = request
-    
+
     def _getattr(self, attr, default=None):
         return getattr(self.wrapped_request, attr, default)
 
@@ -61,13 +65,13 @@ class Request:
         """Request URL (full).
         """
         return self._getattr('url')
-    
+
     @property
     def method(self):
         """HTTP method for this request.
         """
         return self._getattr('method')
-    
+
     @property
     def host(self):
         """Host name, usually retrieved from the HTTP headers.
@@ -79,31 +83,31 @@ class Request:
         """HTTP request path.
         """
         return self._getattr('path')
-    
+
     @property
     def scheme(self):
         """HTTP request scheme (``http`` or ``https``).
         """
         return self._getattr('scheme')
-    
+
     @property
     def query_string(self):
         """HTTP request query string.
         """
         return self._getattr('query_string')
-    
+
     @property
     def data(self):
         """HTTP request data. Usually raw data because it was not decoded as form params or json.
         """
         return self._getattr('data')
-    
+
     @property
     def form(self):
         """Form data as dict.
         """
         return self._getattr('form')
-    
+
     @property
     def json(self):
         """Dict containing the decoded JSON data.
@@ -148,34 +152,29 @@ class Request:
         return None
 
 
-
 class Response:
     """HTTP response wrapper.
     """
-    def __init__(self, response):
-        self.wrapped_response = response
+    def __init__(self):
         self.ended = False
-    
-    def _getattr(self, name):
-        return getattr(self.wrapped_response, name, None)
-    
-    def _call(self, fn_name, *args, **kwargs):
-        fn = self._getattr(fn_name)
-        if fn:
-            return fn(*args, **kwargs)
+        self._headers = {}
+        self._status = 'OK'
+        self._status_code = 200
+        self._buffer = StringIO('')
+        self.modified = False
 
     @property
     def headers(self):
         """Response headers dict.
         """
-        return self._getattr('headers')
-    
+        return self._headers
+
     @headers.setter
-    def headers(self, hdrs=None):
+    def headers(self, hdrs):
         """Response headers setter.
         """
-        if hdrs is None:
-            self.wrapped_response.headers = hdrs
+        self._headers = hdrs
+        self.modified = True
 
     def set_header(self, header, value):
         """Set HTTP response header.
@@ -183,43 +182,43 @@ class Response:
         :param header: ``str``, the header name.
         :param value: ``str``, the header value.
         """
-        hdrs = self._getattr('headers')
-        if hdrs:
-            hdrs[header] = value
-    
+        self._headers[header] = value
+        self.modified = True
+
     @property
     def status(self):
         """Response status message.
         """
-        return self._getattr('status')
-    
+        return self._status
+
     @status.setter
     def status(self, status_message):
         """Response status message.
         """
-        self.wrapped_response.status = status_message
+        self._status = status_message
+        self.modified = True
 
     @property
     def status_code(self):
         """Response status code.
         """
-        return self._getattr('status_code')
-    
+        return self._status_code
+
     @status_code.setter
     def status_code(self, code=None):
         """Response status code.
         """
-        self.wrapped_response.code = code
-    
+        self._status_code = code
+        self.modified = True
+
     def write(self, data):
         """Write data to the HTTP response stream.
 
         :param data: ``str``, the data to be written to the response stream directly.
         """
-        stream = self._getattr('stream')
-        if stream:
-            stream.write(data)
-    
+        self._buffer.write(data)
+        self.modified = True
+
     def write_json(self, data):
         """Writes data to the response stream with ``application/json`` content type.
 
@@ -231,7 +230,14 @@ class Response:
             self.write(data)
         else:
             self.write(json.dumps(data))
-    
+
+    def get_response_body(self):
+        """Get response body as string.
+
+        :returns: ``str``, the response body from the underlying StringIO buffer.
+        """
+        return self._buffer.getvalue()
+
     def end(self, code=None, status=None):
         """End this response.
 
@@ -243,6 +249,7 @@ class Response:
         if status is not None:
             self.status = status
         self.ended = True
+        self.modified = True
 
 
 class SecurityChain:
@@ -252,7 +259,7 @@ class SecurityChain:
     :params security_context: :class:`microkubes.security.SecurityContext`, the security context.
     :params providers: ``list``, list of security providers to execute for each request. A security
         provider is a function that processes the current HTTP request so it can check for existing
-        auth or in order to create one from the request values. The security provider prototype is 
+        auth or in order to create one from the request values. The security provider prototype is
         as follows:
 
             .. code-block:: python
@@ -283,7 +290,7 @@ class SecurityChain:
         """
         self.security_context = security_context
         return self
-    
+
     def provider(self, security_provider):
         """Add a security provider to this chain.
 
@@ -297,7 +304,7 @@ class SecurityChain:
         """
         self.providers.append(security_provider)
         return self
-    
+
     def execute(self, req, resp):
         """Execute this security chain with the given request and response.
 
@@ -355,7 +362,7 @@ def public_routes_provider(*args):
                         provider(is_authenticated_provider)  # we add the is_authenticated_provider last to check if any of the previous have generated authentication.
                         )
     """
-    if not len(args):
+    if not args:
         raise ValueError('you must provide at least one route pattern')
     patterns = []
     for pattern in args:
@@ -365,11 +372,10 @@ def public_routes_provider(*args):
             patterns.append(pattern)
         else:
             raise ValueError('pattern must be str or regex Pattern object')
-    
+
     def _check_public_route(sc, req, resp):
         for pattern in patterns:
             if pattern.match(req.path or ''):
                 raise BreakChain()
-    
+
     return _check_public_route
-            

@@ -1,0 +1,310 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Getting Started with microkubes-python &#8212; microkubes-python 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Microkubes Python library API reference" href="api.html" />
+    <link rel="prev" title="Welcome to microkubes-python’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="getting-started-with-microkubes-python">
+<h1>Getting Started with microkubes-python<a class="headerlink" href="#getting-started-with-microkubes-python" title="Permalink to this headline">¶</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">microkubes-python</span></code> is a library written in Python that contains tools and helpers for integrating
+your microservices with Microkubes platform.</p>
+<p>It offers:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Tools to register your serice with Microkubes API Gateway</li>
+<li>Security library that works with Microkubes own security and user management:</li>
+<li>Support for JWT based auth</li>
+<li>Support for OAuth based auth</li>
+<li>Integration with Flask, so you can secure your Flask API endpoints</li>
+</ul>
+</div></blockquote>
+<div class="section" id="installation-and-setup">
+<h2>Installation and setup<a class="headerlink" href="#installation-and-setup" title="Permalink to this headline">¶</a></h2>
+<p>To install micrkubes-python run:</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install <span class="s2">&quot;git+https://github.com/Microkubes/microkubes-python#egg=microkubes-python&quot;</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>If you want to hack around, you can install it with <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install -e <span class="s2">&quot;git+https://github.com/Microkubes/microkubes-python#egg=microkubes-python&quot;</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>or clone this repository directly:</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/Microkubes/microkubes-python
+<span class="nb">cd</span> microkubes-python
+pip setup.py develop
+pip install -r dev-requirements.txt
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="use-it-with-flask">
+<h2>Use it with Flask<a class="headerlink" href="#use-it-with-flask" title="Permalink to this headline">¶</a></h2>
+<p>If you’re developing with <a class="reference external" href="http://flask.pocoo.org/">Flask</a>, then you need to install it additionaly:</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install Flask
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="example-service-in-flask">
+<h2>Example service in Flask<a class="headerlink" href="#example-service-in-flask" title="Permalink to this headline">¶</a></h2>
+<p>As an example we can write small hello-world-like service in Flask (service.py):</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+<span class="kn">from</span> <span class="nn">microkubes.gateway</span> <span class="kn">import</span> <span class="n">KongGatewayRegistrator</span>
+
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">registrator</span> <span class="o">=</span> <span class="n">KongGatewayRegistrator</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;API_GATEWAY_URL&quot;</span><span class="p">,</span> <span class="s2">&quot;http://localhost:8001&quot;</span><span class="p">))</span>  <span class="c1"># Use the Kong registrator for Microkubes</span>
+
+
+<span class="c1"># Self-registration on the API Gateway must be the first thing we do when running this service.</span>
+<span class="c1"># If the registration fails, then the whole service must terminate.</span>
+<span class="n">registrator</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello-service&quot;</span><span class="p">,</span>                  <span class="c1"># the service name.</span>
+                    <span class="n">paths</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;/hello&quot;</span><span class="p">],</span>                      <span class="c1"># URL pattern that Kong will use to redirect requests to out service</span>
+                    <span class="n">host</span><span class="o">=</span><span class="s2">&quot;hello-service.services.consul&quot;</span><span class="p">,</span>  <span class="c1"># The hostname of the service.</span>
+                    <span class="n">port</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>                             <span class="c1"># Flask default port. When redirecting, Kong will call us on this port.</span>
+
+
+<span class="nd">@app.route</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">():</span>
+    <span class="k">return</span> <span class="s2">&quot;Hello from Flask service on Microkubes&quot;</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="gateway-registration">
+<h1>Gateway registration<a class="headerlink" href="#gateway-registration" title="Permalink to this headline">¶</a></h1>
+<p>The library provides the basic function of registering your own service with the API Gateway.
+The tools are provided in package <code class="docutils literal notranslate"><span class="pre">microkubes.gateway</span></code>.</p>
+<p>To register your service on a gateway, you need to use a <code class="docutils literal notranslate"><span class="pre">Registrator</span></code>. <code class="docutils literal notranslate"><span class="pre">microkubes-python</span></code> comes
+with support for <a class="reference external" href="https://konghq.com/kong-community-edition/">Kong Gateway</a>.</p>
+<p>Example:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">microkubes.gateway</span> <span class="kn">import</span> <span class="n">KongGatewayRegistrator</span>
+
+
+<span class="n">registrator</span> <span class="o">=</span> <span class="n">KongGatewayRegistrator</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;API_GATEWAY_URL&quot;</span><span class="p">,</span> <span class="s2">&quot;http://localhost:8001&quot;</span><span class="p">))</span>  <span class="c1"># Use the Kong registrator for Microkubes</span>
+
+
+<span class="c1"># Self-registration on the API Gateway must be the first thing we do when running this service.</span>
+<span class="c1"># If the registration fails, then the whole service must terminate.</span>
+<span class="n">registrator</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello-service&quot;</span><span class="p">,</span>                  <span class="c1"># the service name.</span>
+                    <span class="n">paths</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;/hello&quot;</span><span class="p">],</span>                      <span class="c1"># URL pattern that Kong will use to redirect requests to out service</span>
+                    <span class="n">host</span><span class="o">=</span><span class="s2">&quot;hello-service.services.consul&quot;</span><span class="p">,</span>  <span class="c1"># The hostname of the service.</span>
+                    <span class="n">port</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>                             <span class="c1"># Flask default port. When redirecting, Kong will call us on this port.</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Note that the registration of our service to the gateway should be one of the first things that the
+service does. On Microkubes microservices do this check first and terminate if anything goes wrong.</p>
+</div>
+<div class="section" id="security">
+<h1>Security<a class="headerlink" href="#security" title="Permalink to this headline">¶</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">microkubes-python</span></code> provides tools for implementing security in your services that works with the
+security infrastructure provided by Microkubes.</p>
+<p>The security library offers python API for setting up security based on yor needs. It comes with
+couple of security providers out-of-the-box:</p>
+<blockquote>
+<div><ul class="simple">
+<li>JWT provider - can decode and validate JWTs generated by Microkubes <code class="docutils literal notranslate"><span class="pre">jwt-issuer</span></code> service</li>
+<li>OAuth2 provider  -can decode and validate OAuth2 tokens generated by the OAuth2 Authorization Server in Microkubes.</li>
+</ul>
+</div></blockquote>
+<p>The security is configured as a chain of providers, so you can have more than one type on any endpoint in your
+service.</p>
+<p>The main entrypoint for this is the <code class="docutils literal notranslate"><span class="pre">SecurityChain</span></code>. When a new request is made by the client, the <code class="docutils literal notranslate"><span class="pre">SecurityChain</span></code>
+passes it to every provider in the chain. Every provider attempts to authenticate and authorize the request.
+If some of the providers is successful, then <code class="docutils literal notranslate"><span class="pre">Auth</span></code> object is generated and set i the <code class="docutils literal notranslate"><span class="pre">SecurityContext</span></code>.</p>
+<p>An example of setting up security chain:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">microkubes.security</span> <span class="kn">import</span> <span class="p">(</span><span class="n">SecurityChain</span><span class="p">,</span>
+                                <span class="n">ThreadLocalSecurityContext</span><span class="p">,</span>
+                                <span class="n">JWTSProvider</span><span class="p">,</span>
+                                <span class="n">is_authenticated_provider</span><span class="p">,</span>
+                                <span class="n">KeyStore</span><span class="p">)</span>
+
+<span class="n">store</span> <span class="o">=</span> <span class="n">KeyStore</span><span class="p">(</span><span class="n">dir_path</span><span class="o">=</span><span class="s1">&#39;./keys&#39;</span><span class="p">)</span>  <span class="c1"># we need key store with the RSA keys so we can validate the JWT signature</span>
+<span class="n">context</span> <span class="o">=</span> <span class="n">ThreadLocalSecurityContext</span><span class="p">()</span>  <span class="c1"># Keeps the Auth in thread-local, which is fine for tests, but should be avoided for production</span>
+
+<span class="n">chain</span> <span class="o">=</span> <span class="p">(</span><span class="n">SecurityChain</span><span class="p">(</span><span class="n">context</span><span class="p">)</span><span class="o">.</span>
+        <span class="n">provider</span><span class="p">(</span><span class="n">JWTSecurityProvider</span><span class="p">(</span><span class="n">key_store</span><span class="o">=</span><span class="n">store</span><span class="p">))</span><span class="o">.</span>  <span class="c1"># Security chain with JWT auth</span>
+        <span class="n">provider</span><span class="p">(</span><span class="n">is_authenticated_provider</span><span class="p">))</span>  <span class="c1"># check if the request has been authenticated</span>
+
+
+<span class="c1"># assuming we receive an HTTP request, the processing of the request can be done like this:</span>
+    <span class="c1"># try:</span>
+    <span class="c1">#     chain.execute(context, request, response)</span>
+    <span class="c1"># except SecurityException serr:</span>
+    <span class="c1">#     response.status_code = serr.status_code</span>
+    <span class="c1">#     response.write_json({&quot;code&quot;: serr.status_code, &quot;message&quot;: str(serr)})</span>
+
+
+<span class="c1"># then we can access the context to get the Auth object:</span>
+
+<span class="n">auth</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get_auth</span><span class="p">()</span>
+</pre></div>
+</div>
+</div></blockquote>
+<div class="section" id="security-with-flask-services">
+<h2>Security with Flask services<a class="headerlink" href="#security-with-flask-services" title="Permalink to this headline">¶</a></h2>
+<p>You can secure your Flask services by using the convinience security builder for Flask.
+You need to create new <code class="docutils literal notranslate"><span class="pre">Security</span></code> and then use <code class="docutils literal notranslate"><span class="pre">Security.secured</span></code> decorator on your endpoints.</p>
+<p>By using the example in Flask above, we can secure the action by setting up a full security chain:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+<span class="kn">from</span> <span class="nn">microkubes.gateway</span> <span class="kn">import</span> <span class="n">KongGatewayRegistrator</span>
+<span class="kn">from</span> <span class="nn">microkubes.security</span> <span class="kn">import</span> <span class="n">FlaskSecurity</span>
+
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">registrator</span> <span class="o">=</span> <span class="n">KongGatewayRegistrator</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;API_GATEWAY_URL&quot;</span><span class="p">,</span> <span class="s2">&quot;http://localhost:8001&quot;</span><span class="p">))</span>  <span class="c1"># Use the Kong registrator for Microkubes</span>
+
+<span class="c1"># set up a security chain</span>
+<span class="n">sec</span> <span class="o">=</span> <span class="p">(</span><span class="n">FlaskSecurity</span><span class="p">()</span><span class="o">.</span>
+        <span class="n">keys_dir</span><span class="p">(</span><span class="s2">&quot;./keys&quot;</span><span class="p">)</span><span class="o">.</span>   <span class="c1"># set up a key-store that has at least the public keys from the platform</span>
+        <span class="n">jwt</span><span class="p">()</span><span class="o">.</span>                <span class="c1"># Add JWT support</span>
+        <span class="n">oauth2</span><span class="p">()</span><span class="o">.</span>             <span class="c1"># Add OAuth2 support</span>
+        <span class="n">build</span><span class="p">())</span>              <span class="c1"># Build the security for Flask</span>
+
+
+<span class="c1"># Self-registration on the API Gateway must be the first thing we do when running this service.</span>
+<span class="c1"># If the registration fails, then the whole service must terminate.</span>
+<span class="n">registrator</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello-service&quot;</span><span class="p">,</span>                  <span class="c1"># the service name.</span>
+                    <span class="n">paths</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;/hello&quot;</span><span class="p">],</span>                      <span class="c1"># URL pattern that Kong will use to redirect requests to out service</span>
+                    <span class="n">host</span><span class="o">=</span><span class="s2">&quot;hello-service.services.consul&quot;</span><span class="p">,</span>  <span class="c1"># The hostname of the service.</span>
+                    <span class="n">port</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>                             <span class="c1"># Flask default port. When redirecting, Kong will call us on this port.</span>
+
+
+<span class="nd">@app.route</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">)</span>
+<span class="nd">@sec.secured</span>   <span class="c1"># this action is now secure</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">():</span>
+    <span class="n">auth</span> <span class="o">=</span> <span class="n">sec</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get_auth</span><span class="p">()</span>  <span class="c1"># get the Auth from the security context</span>
+    <span class="k">return</span> <span class="s2">&quot;Hello </span><span class="si">%s</span><span class="s2"> from Flask service on Microkubes&quot;</span> <span class="o">%</span> <span class="n">auth</span><span class="o">.</span><span class="n">username</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">microkubes-python</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started with microkubes-python</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation-and-setup">Installation and setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#use-it-with-flask">Use it with Flask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example-service-in-flask">Example service in Flask</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#gateway-registration">Gateway registration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#security">Security</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#security-with-flask-services">Security with Flask services</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Microkubes Python library API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to microkubes-python’s documentation!</a></li>
+      <li>Next: <a href="api.html" title="next chapter">Microkubes Python library API reference</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Keitaro <info@keitaro.com>.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/getting-started.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

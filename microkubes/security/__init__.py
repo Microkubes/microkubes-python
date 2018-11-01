@@ -3,9 +3,13 @@
 
 
 from microkubes.security.auth import (SecurityContext,
-                                      Auth)
+                                      Auth,
+                                      ThreadLocalSecurityContext)
+
 from microkubes.security.chain import (SecurityChain,
-                                       SecurityException)
+                                       SecurityException,
+                                       is_authenticated_provider,
+                                       public_routes_provider)
 from microkubes.security.keys import (Key,
                                       KeyStore,
                                       KeyException)
@@ -15,8 +19,15 @@ from microkubes.security.acl import (Policy as ACLPolicy,
                                      ACLProvider)
 
 
-_HAS_FLASK = False
+try:
+    # try using the ContextVar security context if python >= 3.7
+    from contextvars import ContextVar as _ContextVar
+    from microkubes.security.auth import ContextvarsSecurityContext
+except ImportError:
+    pass
 
+
+_HAS_FLASK = False
 try:
     import flask
     _HAS_FLASK = True

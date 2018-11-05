@@ -141,6 +141,177 @@ following properties are guaranteed:</p>
 </dd></dl>
 
 <span class="target" id="module-microkubes.security.auth"></span><p>Security Auth model and SecurityContext API.</p>
+<dl class="class">
+<dt id="microkubes.security.auth.Auth">
+<em class="property">class </em><code class="descclassname">microkubes.security.auth.</code><code class="descname">Auth</code><span class="sig-paren">(</span><em>user_id</em>, <em>username</em>, <em>roles=None</em>, <em>organizations=None</em>, <em>namespaces=None</em>, <em>scope=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/auth.html#Auth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.auth.Auth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Auth is the main Security Authorization model.</p>
+<p><a class="reference internal" href="#microkubes.security.auth.Auth" title="microkubes.security.auth.Auth"><code class="xref py py-class docutils literal notranslate"><span class="pre">Auth</span></code></a> holds the authorization for a particular user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>user_id</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, the User ID.</li>
+<li><strong>username</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, username. Usually in Microkubes this is the user email,</li>
+<li><strong>roles</strong> – <code class="docutils literal notranslate"><span class="pre">list</span></code>, list of roles that the user has. May be empty or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</li>
+<li><strong>organizations</strong> – <code class="docutils literal notranslate"><span class="pre">list</span></code>, list of organization to which this user belongs to.</li>
+<li><strong>namespaces</strong> – <code class="docutils literal notranslate"><span class="pre">list</span></code>: list of namespaces to which this user belongs to.</li>
+<li><strong>scope</strong> – <code class="docutils literal notranslate"><span class="pre">str</span></code>, scope to which this Auth is limited to.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="microkubes.security.auth.SecurityContext">
+<em class="property">class </em><code class="descclassname">microkubes.security.auth.</code><code class="descname">SecurityContext</code><span class="sig-paren">(</span><em>local_context</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/auth.html#SecurityContext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.auth.SecurityContext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Context object that holds security data.</p>
+<p>The instaces of this class are intended to be shared between requests, threads and/or corouthines.</p>
+<p>The auth object is kept in a local context - usually a proxy to a Thread-local or contextvar based
+local context.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>local_context</strong> – the local context object used for storing the Auth objects. The auth object will be
+visible only to the request/coroutine that has set it.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="microkubes.security.auth.SecurityContext.clear_auth">
+<code class="descname">clear_auth</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/auth.html#SecurityContext.clear_auth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.auth.SecurityContext.clear_auth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear the current <a class="reference internal" href="#microkubes.security.auth.Auth" title="microkubes.security.auth.Auth"><code class="xref py py-class docutils literal notranslate"><span class="pre">Auth</span></code></a> from this context.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.auth.SecurityContext.get_auth">
+<code class="descname">get_auth</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/auth.html#SecurityContext.get_auth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.auth.SecurityContext.get_auth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the current <a class="reference internal" href="#microkubes.security.auth.Auth" title="microkubes.security.auth.Auth"><code class="xref py py-class docutils literal notranslate"><span class="pre">Auth</span></code></a>, if set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#microkubes.security.auth.Auth" title="microkubes.security.auth.Auth"><code class="xref py py-class docutils literal notranslate"><span class="pre">Auth</span></code></a> or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.auth.SecurityContext.has_auth">
+<code class="descname">has_auth</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/auth.html#SecurityContext.has_auth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.auth.SecurityContext.has_auth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if there is an <a class="reference internal" href="#microkubes.security.auth.Auth" title="microkubes.security.auth.Auth"><code class="xref py py-class docutils literal notranslate"><span class="pre">Auth</span></code></a> set in this security context.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">True</span></code> if there is an auth set, otherwise <code class="docutils literal notranslate"><span class="pre">False</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="microkubes.security.auth.SecurityContext.set_auth">
+<code class="descname">set_auth</code><span class="sig-paren">(</span><em>auth</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/auth.html#SecurityContext.set_auth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.auth.SecurityContext.set_auth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the given <a class="reference internal" href="#microkubes.security.auth.Auth" title="microkubes.security.auth.Auth"><code class="xref py py-class docutils literal notranslate"><span class="pre">Auth</span></code></a> in the current context.</p>
+<p>If already set, this <a class="reference internal" href="#microkubes.security.auth.Auth" title="microkubes.security.auth.Auth"><code class="xref py py-class docutils literal notranslate"><span class="pre">Auth</span></code></a> overrides the existing one.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>auth</strong> – <a class="reference internal" href="#microkubes.security.auth.Auth" title="microkubes.security.auth.Auth"><code class="xref py py-class docutils literal notranslate"><span class="pre">Auth</span></code></a>, the auth object to set in the security context.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="microkubes.security.auth.ThreadLocalSecurityContext">
+<em class="property">class </em><code class="descclassname">microkubes.security.auth.</code><code class="descname">ThreadLocalSecurityContext</code><a class="reference internal" href="_modules/microkubes/security/auth.html#ThreadLocalSecurityContext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.auth.ThreadLocalSecurityContext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Thread-local based implementation of the <code class="xref py py-class docutils literal notranslate"><span class="pre">SecurtyContext</span></code>.</p>
+<p>See <a class="reference external" href="https://docs.python.org/3/library/threading.html#thread-local-data">https://docs.python.org/3/library/threading.html#thread-local-data</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="microkubes.security.auth.clear_auth">
+<code class="descclassname">microkubes.security.auth.</code><code class="descname">clear_auth</code><span class="sig-paren">(</span><em>local_context</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/auth.html#clear_auth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.auth.clear_auth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears the current <a class="reference internal" href="#microkubes.security.auth.Auth" title="microkubes.security.auth.Auth"><code class="xref py py-class docutils literal notranslate"><span class="pre">Auth</span></code></a> in the goven local context.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>local_context</strong> – the current local context. This is either ThreadLocal object or ContextVars
+context. See <a class="reference external" href="https://docs.python.org/3/library/threading.html#thread-local-data">https://docs.python.org/3/library/threading.html#thread-local-data</a> for thread-based
+local context or <a class="reference external" href="https://docs.python.org/3/library/contextvars.html">https://docs.python.org/3/library/contextvars.html</a> for contextvars based
+local context.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="microkubes.security.auth.get_auth">
+<code class="descclassname">microkubes.security.auth.</code><code class="descname">get_auth</code><span class="sig-paren">(</span><em>local_context</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/auth.html#get_auth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.auth.get_auth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get current <a class="reference internal" href="#microkubes.security.auth.Auth" title="microkubes.security.auth.Auth"><code class="xref py py-class docutils literal notranslate"><span class="pre">Auth</span></code></a> from the given local context.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>local_context</strong> – the current local context. This is either ThreadLocal object or ContextVars
+context. See <a class="reference external" href="https://docs.python.org/3/library/threading.html#thread-local-data">https://docs.python.org/3/library/threading.html#thread-local-data</a> for thread-based
+local context or <a class="reference external" href="https://docs.python.org/3/library/contextvars.html">https://docs.python.org/3/library/contextvars.html</a> for contextvars based
+local context.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#microkubes.security.auth.Auth" title="microkubes.security.auth.Auth"><code class="xref py py-class docutils literal notranslate"><span class="pre">Auth</span></code></a> if the current local context contains Auth. Otherwise <code class="docutils literal notranslate"><span class="pre">None</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="microkubes.security.auth.has_auth">
+<code class="descclassname">microkubes.security.auth.</code><code class="descname">has_auth</code><span class="sig-paren">(</span><em>local_context</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/auth.html#has_auth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.auth.has_auth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks whether there was an <a class="reference internal" href="#microkubes.security.auth.Auth" title="microkubes.security.auth.Auth"><code class="xref py py-class docutils literal notranslate"><span class="pre">Auth</span></code></a> set for this local context.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>local_context</strong> – the current local context. This is either ThreadLocal object or ContextVars
+context. See <a class="reference external" href="https://docs.python.org/3/library/threading.html#thread-local-data">https://docs.python.org/3/library/threading.html#thread-local-data</a> for thread-based
+local context or <a class="reference external" href="https://docs.python.org/3/library/contextvars.html">https://docs.python.org/3/library/contextvars.html</a> for contextvars based
+local context.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="microkubes.security.auth.set_auth">
+<code class="descclassname">microkubes.security.auth.</code><code class="descname">set_auth</code><span class="sig-paren">(</span><em>local_context</em>, <em>auth</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/auth.html#set_auth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.auth.set_auth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the <a class="reference internal" href="#microkubes.security.auth.Auth" title="microkubes.security.auth.Auth"><code class="xref py py-class docutils literal notranslate"><span class="pre">Auth</span></code></a> in the current local context.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>local_context</strong> – the current local context. This is either ThreadLocal object or ContextVars
+context. See <a class="reference external" href="https://docs.python.org/3/library/threading.html#thread-local-data">https://docs.python.org/3/library/threading.html#thread-local-data</a> for thread-based
+local context or <a class="reference external" href="https://docs.python.org/3/library/contextvars.html">https://docs.python.org/3/library/contextvars.html</a> for contextvars based
+local context.</li>
+<li><strong>auth</strong> – <a class="reference internal" href="#microkubes.security.auth.Auth" title="microkubes.security.auth.Auth"><code class="xref py py-class docutils literal notranslate"><span class="pre">Auth</span></code></a>, the auth to set in the context.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <span class="target" id="module-microkubes.security.chain"></span><p>SecurityChain implementation.</p>
 <dl class="exception">
 <dt id="microkubes.security.chain.BreakChain">
@@ -156,11 +327,11 @@ chain execution.</p>
 <dt id="microkubes.security.chain.Request">
 <em class="property">class </em><code class="descclassname">microkubes.security.chain.</code><code class="descname">Request</code><span class="sig-paren">(</span><em>request</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#Request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.Request" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request wrapper, partly compatible with Flask Request.</p>
-<p>Wraps the original request to ensure trasparent access to most common properties
+<p>Wraps the original request to ensure transparent access to most common properties
 of while evaluating the request for security authentication/authorization.</p>
 <p>This basic implementation will try to treat the wrapped (underlying) HTTP request
-to be Flask-type request object. Other implemenations can extend from this class
-and override or add other functinalities for accessing the request data.</p>
+to be Flask-type request object. Other implementations can extend from this class
+and override or add other functionalities for accessing the request data.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -494,7 +665,7 @@ or has wrong value.</li>
 <code class="descclassname">microkubes.security.chain.</code><code class="descname">is_authenticated_provider</code><span class="sig-paren">(</span><em>sc</em>, <em>req</em>, <em>resp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/microkubes/security/chain.html#is_authenticated_provider"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#microkubes.security.chain.is_authenticated_provider" title="Permalink to this definition">¶</a></dt>
 <dd><p>Security provider to check if the current request has been authenticated.</p>
 <p>You can add this provider to the end of the security chain to detect if the previous
-providers have been succesfull in creating authnetication for the request.</p>
+providers have been successful in creating authentication for the request.</p>
 <p>Raises <a class="reference internal" href="#microkubes.security.chain.SecurityException" title="microkubes.security.chain.SecurityException"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecurityException</span></code></a> if the security context does not contain authentication.</p>
 </dd></dl>
 
@@ -686,14 +857,14 @@ based on the file name.</li>
 validated with the keys provided by the <code class="docutils literal notranslate"><span class="pre">KeyStore</span></code>. If the token contains the optional
 key ID header (<code class="docutils literal notranslate"><span class="pre">kid</span></code>), then the decoding will be attempted with the specified key (if
 such key can be found with the registered <code class="docutils literal notranslate"><span class="pre">KeyStore</span></code>).</p>
-<p>If the attempted decoding and validation of the JWT is successful, then <code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.auth.Auth</span></code>
+<p>If the attempted decoding and validation of the JWT is successful, then <a class="reference internal" href="#microkubes.security.auth.Auth" title="microkubes.security.auth.Auth"><code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.auth.Auth</span></code></a>
 is created and set in the current security context.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ctx</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.auth.SecurityContext</span></code>, current <code class="docutils literal notranslate"><span class="pre">SecurityContext</span></code>.</li>
+<li><strong>ctx</strong> – <a class="reference internal" href="#microkubes.security.auth.SecurityContext" title="microkubes.security.auth.SecurityContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.auth.SecurityContext</span></code></a>, current <code class="docutils literal notranslate"><span class="pre">SecurityContext</span></code>.</li>
 <li><strong>req</strong> – <a class="reference internal" href="#microkubes.security.chain.Request" title="microkubes.security.chain.Request"><code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.chain.Request</span></code></a>, wrapped HTTP Request.</li>
 <li><strong>resp</strong> – <a class="reference internal" href="#microkubes.security.chain.Response" title="microkubes.security.chain.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.chain.Response</span></code></a>, wrapped HTTP Response.</li>
 </ul>
@@ -765,7 +936,7 @@ used to secure the Flask’s endpoints.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>context</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.auth.SecurityContext</span></code> - the security context to be used.
+<li><strong>context</strong> – <a class="reference internal" href="#microkubes.security.auth.SecurityContext" title="microkubes.security.auth.SecurityContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.auth.SecurityContext</span></code></a> - the security context to be used.
 By default <a class="reference internal" href="#microkubes.security.flask.FlaskSecurityContext" title="microkubes.security.flask.FlaskSecurityContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">FlaskSecurityContext</span></code></a> is used.</li>
 <li><strong>key_store</strong> – <a class="reference internal" href="#microkubes.security.keys.KeyStore" title="microkubes.security.keys.KeyStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">microkubes.security.keys.KeyStore</span></code></a>, <code class="docutils literal notranslate"><span class="pre">KeyStore</span></code> instance.</li>
 </ul>

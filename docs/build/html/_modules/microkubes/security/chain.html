@@ -79,12 +79,12 @@
 <div class="viewcode-block" id="Request"><a class="viewcode-back" href="../../../api.html#microkubes.security.chain.Request">[docs]</a><span class="k">class</span> <span class="nc">Request</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Request wrapper, partly compatible with Flask Request.</span>
 
-<span class="sd">    Wraps the original request to ensure trasparent access to most common properties</span>
+<span class="sd">    Wraps the original request to ensure transparent access to most common properties</span>
 <span class="sd">    of while evaluating the request for security authentication/authorization.</span>
 
 <span class="sd">    This basic implementation will try to treat the wrapped (underlying) HTTP request</span>
-<span class="sd">    to be Flask-type request object. Other implemenations can extend from this class</span>
-<span class="sd">    and override or add other functinalities for accessing the request data.</span>
+<span class="sd">    to be Flask-type request object. Other implementations can extend from this class</span>
+<span class="sd">    and override or add other functionalities for accessing the request data.</span>
 
 <span class="sd">    :param request: ``object``, the original request. This may be the original Flask Request</span>
 <span class="sd">        or any other underlying implementation type request object.</span>
@@ -169,21 +169,21 @@
         <span class="sd">&quot;&quot;&quot;Get the raw HTTP request data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapped_request</span><span class="p">,</span> <span class="s1">&#39;get_data&#39;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped_request</span><span class="p">[</span><span class="s1">&#39;get_data&#39;</span><span class="p">]()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped_request</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="Request.get_json"><a class="viewcode-back" href="../../../api.html#microkubes.security.chain.Request.get_json">[docs]</a>    <span class="k">def</span> <span class="nf">get_json</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the decoded JSON data as dict.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapped_request</span><span class="p">,</span> <span class="s1">&#39;get_json&#39;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped_request</span><span class="p">[</span><span class="s1">&#39;get_json&#39;</span><span class="p">]()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped_request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="Request.get_form"><a class="viewcode-back" href="../../../api.html#microkubes.security.chain.Request.get_form">[docs]</a>    <span class="k">def</span> <span class="nf">get_form</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get decoded form params as dict.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapped_request</span><span class="p">,</span> <span class="s1">&#39;get_form&#39;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped_request</span><span class="p">[</span><span class="s1">&#39;get_form&#39;</span><span class="p">]()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped_request</span><span class="o">.</span><span class="n">get_form</span><span class="p">()</span>
         <span class="k">return</span> <span class="kc">None</span></div></div>
 
 
@@ -366,12 +366,12 @@
     <span class="sd">&quot;&quot;&quot;Security provider to check if the current request has been authenticated.</span>
 
 <span class="sd">    You can add this provider to the end of the security chain to detect if the previous</span>
-<span class="sd">    providers have been succesfull in creating authnetication for the request.</span>
+<span class="sd">    providers have been successful in creating authentication for the request.</span>
 
 <span class="sd">    Raises :class:`SecurityException` if the security context does not contain authentication.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">sc</span><span class="o">.</span><span class="n">has_auth</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="n">SecurityException</span><span class="p">(</span><span class="s1">&#39;not authenticated&#39;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="n">SecurityException</span><span class="p">(</span><span class="s1">&#39;authentication required&#39;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">401</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="public_routes_provider"><a class="viewcode-back" href="../../../api.html#microkubes.security.chain.public_routes_provider">[docs]</a><span class="k">def</span> <span class="nf">public_routes_provider</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
@@ -410,7 +410,7 @@
 
     <span class="k">def</span> <span class="nf">_check_public_route</span><span class="p">(</span><span class="n">sc</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">resp</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">patterns</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">path</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">pattern</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">path</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="n">BreakChain</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">_check_public_route</span></div>

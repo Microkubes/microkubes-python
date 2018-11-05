@@ -44,12 +44,12 @@ class BreakChain(Exception):
 class Request:
     """Request wrapper, partly compatible with Flask Request.
 
-    Wraps the original request to ensure transparent access to most common properties
+    Wraps the original request to ensure trasparent access to most common properties
     of while evaluating the request for security authentication/authorization.
 
     This basic implementation will try to treat the wrapped (underlying) HTTP request
-    to be Flask-type request object. Other implementations can extend from this class
-    and override or add other functionalities for accessing the request data.
+    to be Flask-type request object. Other implemenations can extend from this class
+    and override or add other functinalities for accessing the request data.
 
     :param request: ``object``, the original request. This may be the original Flask Request
         or any other underlying implementation type request object.
@@ -134,21 +134,21 @@ class Request:
         """Get the raw HTTP request data.
         """
         if hasattr(self.wrapped_request, 'get_data'):
-            return self.wrapped_request.get_data()
+            return self.wrapped_request['get_data']()
         return None
 
     def get_json(self):
         """Get the decoded JSON data as dict.
         """
         if hasattr(self.wrapped_request, 'get_json'):
-            return self.wrapped_request.get_json()
+            return self.wrapped_request['get_json']()
         return None
 
     def get_form(self):
         """Get decoded form params as dict.
         """
         if hasattr(self.wrapped_request, 'get_form'):
-            return self.wrapped_request.get_form()
+            return self.wrapped_request['get_form']()
         return None
 
 
@@ -331,12 +331,12 @@ def is_authenticated_provider(sc, req, resp):
     """Security provider to check if the current request has been authenticated.
 
     You can add this provider to the end of the security chain to detect if the previous
-    providers have been successful in creating authentication for the request.
+    providers have been succesfull in creating authnetication for the request.
 
     Raises :class:`SecurityException` if the security context does not contain authentication.
     """
     if not sc.has_auth():
-        raise SecurityException('authentication required', status_code=401)
+        raise SecurityException('not authenticated')
 
 
 def public_routes_provider(*args):
@@ -375,7 +375,7 @@ def public_routes_provider(*args):
 
     def _check_public_route(sc, req, resp):
         for pattern in patterns:
-            if pattern.fullmatch(req.path or ''):
+            if pattern.match(req.path or ''):
                 raise BreakChain()
 
     return _check_public_route

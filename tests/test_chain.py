@@ -94,7 +94,8 @@ def test_response():
 
 
 def test_chain_execute():
-
+    """Test Security chain - execute providers chain.
+    """
     req = Request(None)
     resp = Response()
     context = ThreadLocalSecurityContext()
@@ -126,6 +127,8 @@ def test_chain_execute():
 
 
 def test_chain_execute_break_chain():
+    """Test SecurityChain execution of providers - break the chain.
+    """
     req = Request(None)
     resp = Response()
     context = ThreadLocalSecurityContext()
@@ -165,6 +168,8 @@ def test_chain_execute_break_chain():
 
 @mock.patch.object(SecurityContext, "has_auth")
 def test_is_authenticated_provider_pass(has_auth_mock):
+    """Test is_authenticated provider - authenticated scenario.
+    """
     has_auth_mock.return_value = True
 
     sc = SecurityContext(None)
@@ -178,6 +183,8 @@ def test_is_authenticated_provider_pass(has_auth_mock):
 
 @mock.patch.object(SecurityContext, "has_auth")
 def test_is_authenticated_provider_block(has_auth_mock):
+    """Test is_authenticated provider - not authenticated scenario.
+    """
     has_auth_mock.return_value = False
 
     sc = SecurityContext(None)
@@ -197,7 +204,11 @@ def test_is_authenticated_provider_block(has_auth_mock):
 
 
 def test_public_routes_provider():
+    """Test public routes provider.
+    """
     def expect(exc, fn, *args):
+        """Expect fn to throw an exception of the provided type.
+        """
         try:
             fn(*args)
         except Exception as e:
@@ -209,8 +220,10 @@ def test_public_routes_provider():
     _R = namedtuple('_Request', ['path'])
 
     def request(path):
+        """Create new request with this path.
+        """
         return Request(_R(path))
-    
+
     sc = SecurityContext(None)
     resp = Response()
 

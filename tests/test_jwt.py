@@ -88,8 +88,7 @@ def test_jwt_pass(get_header_mock):
         req_object = local()
         request = Request(req_object)
 
-        resp_object = local()
-        response = Response(resp_object)
+        response = Response()
 
         jwt_provider(context, request, response)
 

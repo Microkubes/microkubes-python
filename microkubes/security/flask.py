@@ -303,9 +303,9 @@ class FlaskSecurity:
         for provider, position in self._other_providers:
             if position in ['after_jwt', 'before_oauth', 'before_oauth2']:
                 providers.append(provider)
-
+                
         if self._oauth_provider:
-            providers.append(provider)
+            providers.append(self._oauth_provider)
 
         for provider, position in self._other_providers:
             if position in ['after_oauth', 'after_oauth2', 'last']:

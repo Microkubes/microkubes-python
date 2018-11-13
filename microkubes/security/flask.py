@@ -64,7 +64,7 @@ class Security:
         req = Request(request)
         resp = Response()
         try:
-            self.security_chain.execute(self.context, req, resp)
+            self.security_chain.execute(req, resp)
         except SecurityException as security_error:
             if self.json_response:
                 flask_response = make_response(dumps({

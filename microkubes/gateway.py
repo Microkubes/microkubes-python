@@ -106,7 +106,7 @@ class KongGatewayRegistrator(Registrator):
             'name': service_def['name'],
             'uris': ','.join(service_def['paths']),
             'upstream_url': 'http://%s:%d' % (service_def['host'], service_def['port']),
-            "preserve_host": true,
+            "preserve_host": True,
         }
 
     def _get_api_by_name(self, api_name):

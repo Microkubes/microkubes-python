@@ -64,7 +64,7 @@ class Security:
         req = Request(request)
         resp = Response()
         try:
-            self.security_chain.execute(self.context, req, resp)
+            self.security_chain.execute(req, resp)
         except SecurityException as security_error:
             if self.json_response:
                 flask_response = make_response(dumps({
@@ -274,7 +274,7 @@ class FlaskSecurity:
 
         :param provider: ``function``, the security provider to add
         :param position: ``str``, at which position in the chain to add the provider. One of ``first``,
-            ``before_jwt``, ``after_public``, ``after_jwt``, ``before_oauth2``, ``last`` and ``final`` is allowed. 
+            ``before_jwt``, ``after_public``, ``after_jwt``, ``before_oauth2``, ``last`` and ``final`` is allowed.
             Default is ``last``.
 
         :returns: :class:`FlaskSecurity`.
@@ -303,7 +303,7 @@ class FlaskSecurity:
         for provider, position in self._other_providers:
             if position in ['after_jwt', 'before_oauth', 'before_oauth2']:
                 providers.append(provider)
-                
+
         if self._oauth_provider:
             providers.append(self._oauth_provider)
 

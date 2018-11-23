@@ -55,7 +55,7 @@ class Auth:
 
     def __hash__(self):
         return self.__str__().__hash__()
-    
+
 
 def get_auth(local_context):
     """Get current :class:`Auth` from the given local context.
@@ -165,7 +165,7 @@ class ThreadLocalSecurityContext(SecurityContext):
 
 
 if _HAS_CONTEXTVARS:
-    _CTXVAR_LOCAL_CONTEXT = ContextVar("local_context", {})
+    _CTXVAR_LOCAL_CONTEXT = ContextVar("local_context", default={})
 
     class _LocalContextProxy:
 

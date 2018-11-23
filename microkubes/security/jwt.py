@@ -22,7 +22,7 @@ class JWTProvider:
         self.key_store = key_store
         self.header = header
         self.auth_schema = auth_schema
-        self.algs = algs or ['HS256', 'RS256']
+        self.algs = algs or ['HS256', 'RS256', 'RS512']
 
     def execute(self, ctx, req, resp):
         """Execute the security chain provider.
@@ -69,7 +69,7 @@ class JWTProvider:
     def _get_auth(self, token):
         user_id = token.get('userId')
         username = token.get('username')
-        scope = token.get('scope')
+        scope = token.get('scopes')
         roles = token.get('roles', [])
 
         if not user_id:

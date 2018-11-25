@@ -71,7 +71,7 @@ def test_jwt_pass(get_header_mock):
         header_token = get_jwt(key_store, {
             'userId': 'test-user',
             'username': 'user@example.com',
-            'scope': 'api:read',
+            'scopes': 'api:read',
             'roles': 'user,test',
             'organizations': 'org1,org2',
             'namespaces': 'microkubes,special1'
@@ -98,7 +98,7 @@ def test_jwt_pass(get_header_mock):
         assert auth is not None
         assert auth.user_id == 'test-user'
         assert auth.username == 'user@example.com'
-        assert auth.scope == 'api:read'
+        assert auth.scopes == ['api:read']
         assert auth.roles == ['user', 'test']
         assert auth.organizations == ['org1', 'org2']
         assert auth.namespaces == ['microkubes', 'special1']

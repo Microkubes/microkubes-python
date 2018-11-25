@@ -22,23 +22,23 @@ class Auth:
     :param roles: ``list``, list of roles that the user has. May be empty or ``None``.
     :param organizations: ``list``, list of organization to which this user belongs to.
     :param namespaces: ``list``: list of namespaces to which this user belongs to.
-    :param scope: ``str``, scope to which this Auth is limited to.
+    :param scopes: ``list``, scopes to which this Auth is limited to.
     """
-    def __init__(self, user_id, username, roles=None, organizations=None, namespaces=None, scope=None):
+    def __init__(self, user_id, username, roles=None, organizations=None, namespaces=None, scopes=None):
         self.user_id = user_id
         self.username = username
         self.roles = roles or []
         self.organizations = organizations or []
         self.namespaces = namespaces or []
-        self.scope = scope
+        self.scopes = scopes
 
     def __repr__(self):
-        return 'Auth<%s (%s) roles=[%s], orgs=[%s], ns=[%s], scope=%s>' % (self.user_id,
+        return 'Auth<%s (%s) roles=[%s], orgs=[%s], ns=[%s], scopes=%s>' % (self.user_id,
                                                                            self.username,
                                                                            ','.join(self.roles or []),
                                                                            ','.join(self.organizations or []),
                                                                            ','.join(self.namespaces or []),
-                                                                           self.scope or 'None')
+                                                                           ','.join(self.scopes or []))
     def __str__(self):
         return self.__repr__()
 
@@ -48,7 +48,7 @@ class Auth:
 
         return (self.user_id == o.user_id and
                 self.username == o.username and
-                self.scope == o.scope and
+                set(self.scopes or []) == set(o.scopes or []) and
                 set(self.roles or []) == set(o.roles or []) and
                 set(self.organizations or []) == set(o.organizations or []) and
                 set(self.namespaces or []) == set(o.namespaces or []))

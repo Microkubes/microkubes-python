@@ -20,25 +20,25 @@ def test_auth_eq():
     assert a2 != a1
 
     a1 = Auth(user_id="a1", username="a1@example.com", roles=["user"], organizations=["o1", "o2"],
-              namespaces=["ns1", "ns2"], scope="test-scope")
+              namespaces=["ns1", "ns2"], scopes="api:read,api:write")
     a2 = Auth(user_id="a1", username="a1@example.com", roles=["user"], organizations=["o1", "o2"],
-              namespaces=["ns1", "ns2"], scope="test-scope")
+              namespaces=["ns1", "ns2"], scopes="api:read,api:write")
 
     assert a1 == a2
 
     # mix up the names in the lists
     a1 = Auth(user_id="a1", username="a1@example.com", roles=["user", "r2"], organizations=["o1", "o2"],
-              namespaces=["ns1", "ns2"], scope="test-scope")
+              namespaces=["ns1", "ns2"], scopes="api:read,api:write")
     a2 = Auth(user_id="a1", username="a1@example.com", roles=["r2", "user"], organizations=["o2", "o1"],
-              namespaces=["ns2", "ns1"], scope="test-scope")
+              namespaces=["ns2", "ns1"], scopes="api:read,api:write")
 
     assert a1 == a2
 
     # mix, but should not be equal
     a1 = Auth(user_id="a1", username="a1@example.com", roles=["user", "r2"], organizations=["o1", "o2"],
-              namespaces=["ns1", "ns2", "ns3"], scope="test-scope")
+              namespaces=["ns1", "ns2", "ns3"], scopes="api:read,api:write")
     a2 = Auth(user_id="a1", username="a1@example.com", roles=["r2", "user"], organizations=["o2", "o1"],
-              namespaces=["ns2", "ns1"], scope="test-scope")
+              namespaces=["ns2", "ns1"], scopes="api:read,api:write")
 
     assert a1 != a2
 

@@ -22,7 +22,7 @@ class JWTProvider:
         self.key_store = key_store
         self.header = header
         self.auth_schema = auth_schema
-        self.algs = algs or ['HS256', 'RS256', 'RS512']
+        self.algs = algs or ['HS256', 'HS512', 'RS256', 'RS512']
 
     def execute(self, ctx, req, resp):
         """Execute the security chain provider.
@@ -69,15 +69,17 @@ class JWTProvider:
     def _get_auth(self, token):
         user_id = token.get('userId')
         username = token.get('username')
-        scope = token.get('scopes')
+        scopes = token.get('scopes', [])
         roles = token.get('roles', [])
 
         if not user_id:
             raise Exception('user_id is missing')
         if not username:
             raise Exception('username is missing')
-        if not scope:
-            raise Exception('scope not specified')
+        if not scopes:
+            raise Exception('scopes not specified')
+
+        scopes = [scope.strip() for scope in scopes.split(',')]
 
         if roles:
             roles = [role.strip() for role in roles.split(',')]
@@ -90,7 +92,7 @@ class JWTProvider:
         if namespaces:
             namespaces = [ns.strip() for ns in namespaces.split(',')]
 
-        return Auth(user_id, username, roles=roles, organizations=organizations, namespaces=namespaces, scope=scope)
+        return Auth(user_id, username, roles=roles, organizations=organizations, namespaces=namespaces, scopes=scopes)
 
     def _get_keys(self, token_value):
         token_header = jwt.get_unverified_header(token_value)

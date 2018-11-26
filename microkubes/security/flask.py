@@ -1,6 +1,7 @@
 """Flask decorators and helpers to set up Microkubes security for Flask apps.
 """
 from json import dumps
+from functools import wraps
 
 from flask import request, make_response, g
 
@@ -95,6 +96,7 @@ class Security:
 
         :returns: ``function``, the security decorator for the given method or function..
         """
+        @wraps(decorated)
         def _secured_method(*args, **kwargs):
             allowed, flask_resp = self.check()
             if not allowed:

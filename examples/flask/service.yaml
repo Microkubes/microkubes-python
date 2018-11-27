@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: hello-service
+  namespace: microkubes
+  labels:
+    app: hello-service
+    platform: microkubes
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: hello-service
+      labels:
+        app: hello-service
+        platform: microkubes
+      annotations:
+        consul.register/enabled: "true"
+        consul.register/service.name: "hello-service"
+    spec:
+      containers:
+        - name: hello-service
+          image: hello-service:latest
+          imagePullPolicy: Never
+          env:
+            - name: API_GATEWAY_URL
+              value: "http://demo-kong-admin:8001"
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: microkubes-keys
+              mountPath: /run/secrets
+      volumes:
+        - name: microkubes-keys
+          secret:
+            secretName: microkubes-keys

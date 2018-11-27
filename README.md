@@ -63,8 +63,8 @@ registrator = KongGatewayRegistrator(os.environ.get("API_GATEWAY_URL", "http://l
 # Self-registration on the API Gateway must be the first thing we do when running this service.
 # If the registration fails, then the whole service must terminate.
 registrator.register(name="hello-service",                  # the service name.
-                     paths=["/hello"],                      # URL pattern that Kong will use to redirect requests to out service
-                     host="hello-service.services.consul",  # The hostname of the service.
+                     paths=["/"],                           # URL pattern that Kong will use to redirect requests to out service
+                     host="hello-service.service.consul",   # The hostname of the service.
                      port=5000)                             # Flask default port. When redirecting, Kong will call us on this port.
 
 
@@ -95,8 +95,8 @@ registrator = KongGatewayRegistrator(os.environ.get("API_GATEWAY_URL", "http://l
 # Self-registration on the API Gateway must be the first thing we do when running this service.
 # If the registration fails, then the whole service must terminate.
 registrator.register(name="hello-service",                  # the service name.
-                     paths=["/hello"],                      # URL pattern that Kong will use to redirect requests to out service
-                     host="hello-service.services.consul",  # The hostname of the service.
+                     paths=["/"],                           # URL pattern that Kong will use to redirect requests to out service
+                     host="hello-service.service.consul",   # The hostname of the service.
                      port=5000)                             # Flask default port. When redirecting, Kong will call us on this port.
 
 ```
@@ -183,8 +183,8 @@ sec = (FlaskSecurity().
 # Self-registration on the API Gateway must be the first thing we do when running this service.
 # If the registration fails, then the whole service must terminate.
 registrator.register(name="hello-service",                  # the service name.
-                     paths=["/hello"],                      # URL pattern that Kong will use to redirect requests to out service
-                     host="hello-service.services.consul",  # The hostname of the service.
+                     paths=["/"],                           # URL pattern that Kong will use to redirect requests to out service
+                     host="hello-service.service.consul",   # The hostname of the service.
                      port=5000)                             # Flask default port. When redirecting, Kong will call us on this port.
 
 

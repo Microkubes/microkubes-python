@@ -1,14 +1,8 @@
 import os
-import sys
-import logging
 from flask import Flask
 from microkubes.gateway import KongGatewayRegistrator
 from microkubes.security import FlaskSecurity
 
-sys.stdout.flush()
-logging.basicConfig(level=logging.DEBUG)
-
-log = logging.getLogger(__name__)
 app = Flask(__name__)
 registrator = KongGatewayRegistrator(os.environ.get("API_GATEWAY_URL", "http://localhost:8000"))  # Use the Kong registrator for Microkubes
 

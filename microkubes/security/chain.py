@@ -120,6 +120,12 @@ class Request:
         """
         return self._getattr('headers')
 
+    @property
+    def cookies(self):
+        """HTTP Request cookies dict.
+        """
+        return self._getattr('cookies')
+
     def get_header(self, header):
         """Returns the value of the specified HTTP request header.
 
@@ -129,6 +135,16 @@ class Request:
 
         """
         return self._getattr('headers', {}).get(header)
+
+    def get_cookie(self, name):
+        """Returns the value of the specified HTTP request cookie.
+
+        :param name" ``str``, the cookie name.
+
+        :returns: ``str`` the cookie value or ``None``.
+
+        """
+        return self._getattr('cookies', {}).get(name)
 
     def get_data(self):
         """Get the raw HTTP request data.

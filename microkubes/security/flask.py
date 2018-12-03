@@ -7,6 +7,7 @@ from flask import request, make_response, g
 
 from microkubes.security.jwt import JWTProvider
 from microkubes.security.oauth2 import OAuth2Provider
+from microkubes.security.saml import SAMLServiceProvider
 from microkubes.security.auth import SecurityContext
 from microkubes.security.chain import (Request,
                                        Response,
@@ -155,6 +156,7 @@ class FlaskSecurity:
         self._public_routes = []
         self._jwt_provider = None
         self._oauth_provider = None
+        self._saml_sp = None
         self._other_providers = []
         self._prefer_json_respose = True
 
@@ -213,6 +215,13 @@ class FlaskSecurity:
             raise FlaskSecurityError('KeyStore must be defined before setting up the OAuth2 provider.')
         self._oauth_provider = OAuth2Provider(key_store=self.key_store, algs=algs)
         return self
+
+    def saml(self, algs=None, token_name='saml_token'):
+        if not self.key_store:
+            raise FlaskSecurityError('KeyStore must be defined before setting up the SAML service provider.')
+        self._saml_sp = SAMLServiceProvider(key_store=self.key_store, algs=algs, token_name=token_name)
+        return self
+
 
     def public_route(self, *args):
         """Add public routes that will be ignored and not checked by the security.
@@ -308,6 +317,9 @@ class FlaskSecurity:
 
         if self._oauth_provider:
             providers.append(self._oauth_provider)
+
+        if self._saml_sp:
+            providers.append(self._saml_sp)
 
         for provider, position in self._other_providers:
             if position in ['after_oauth', 'after_oauth2', 'last']:

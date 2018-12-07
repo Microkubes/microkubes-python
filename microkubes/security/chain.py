@@ -109,6 +109,12 @@ class Request:
         return self._getattr('form')
 
     @property
+    def args(self):
+        """HTTP request args
+        """
+        return self._getattr('args')
+
+    @property
     def json(self):
         """Dict containing the decoded JSON data.
         """
@@ -178,6 +184,7 @@ class Response:
         self._status_code = 200
         self._buffer = StringIO('')
         self.modified = False
+        self.redirect_url = None
 
     @property
     def headers(self):

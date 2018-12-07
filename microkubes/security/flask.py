@@ -3,7 +3,7 @@
 from json import dumps
 from functools import wraps
 
-from flask import request, make_response, g
+from flask import request, make_response, g, session, redirect
 
 from microkubes.security.jwt import JWTProvider
 from microkubes.security.oauth2 import OAuth2Provider
@@ -59,7 +59,7 @@ class Security:
     def check(self):
         """Perform the check for the given Request in the current SecurityContext.
 
-        :returns: ``tuple``: ``(allowed, flask_response)``, where:
+        :returns: ``tuple``: ``(allowed, flask_response, redirect_url)``, where:
             * ``allowed`` is ``bool`` indicating whether the request is allowed to proceed.
             * ``flask_response`` - :class:`Response` the Flask response. May be ``None``.
         """
@@ -68,6 +68,8 @@ class Security:
         try:
             self.security_chain.execute(req, resp)
         except SecurityException as security_error:
+            if resp.redirect_url is not None:
+                return (False, None, resp.redirect_url)
             if self.json_response:
                 flask_response = make_response(dumps({
                     'code': security_error.status_code,
@@ -77,15 +79,15 @@ class Security:
                 flask_response = make_response(str(security_error), security_error.status_code)
             if security_error.headers:
                 flask_response.headers.update(security_error.headers)
-            return (False, flask_response)
+            return (False, flask_response, None)
 
         if resp.modified or resp.ended:
             flask_response = make_response(resp.get_response_body(), resp.status_code)
             flask_response.status = resp.status
             if resp.headers:
                 flask_response.headers.update(resp.headers)
-            return (True, flask_response)
-        return (True, None)
+            return (True, flask_response, None)
+        return (True, None, None)
 
     def secured(self, decorated):
         """Decorator for security check.
@@ -99,7 +101,9 @@ class Security:
         """
         @wraps(decorated)
         def _secured_method(*args, **kwargs):
-            allowed, flask_resp = self.check()
+            allowed, flask_resp, redirect_url = self.check()
+            if redirect_url is not None:
+                return redirect(redirect_url)
             if not allowed:
                 if flask_resp:
                     return flask_resp
@@ -216,12 +220,9 @@ class FlaskSecurity:
         self._oauth_provider = OAuth2Provider(key_store=self.key_store, algs=algs)
         return self
 
-    def saml(self, algs=None, token_name='saml_token'):
-        if not self.key_store:
-            raise FlaskSecurityError('KeyStore must be defined before setting up the SAML service provider.')
-        self._saml_sp = SAMLServiceProvider(key_store=self.key_store, algs=algs, token_name=token_name)
+    def saml(self, registration_url=''):
+        self._saml_sp = SAMLServiceProvider(saml_session=session, registration_url=registration_url)
         return self
-
 
     def public_route(self, *args):
         """Add public routes that will be ignored and not checked by the security.

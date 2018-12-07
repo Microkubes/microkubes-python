@@ -1,33 +1,33 @@
 """ SAML service provider"""
+import os
+import requests
 
-import jwt
-
-from microkubes.security.jwt import JWTProvider
-from microkubes.security.keys import KeyException
-
+from flask import redirect
+from urllib.parse import urlparse
+from microkubes.security.auth import Auth
+from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from logging import getLogger
+
 log = getLogger(__name__)
 
-class SAMLServiceProvider(JWTProvider):
-    """Decodes SAML token from the request which is JWT token
+class SAMLServiceProvider():
+    """Decodes SAML token from the request
 
     :param key_store: :class:`microkubes.security.keys.KeyStore`, the KeyStore to use with this provider.
-    :param algs: ``list``, list of supported hash signing algorithms. Default is ``['HS256', 'HS512', 'RS256', 'RS512']``.
-
+    :param session_name: :string, the SAML session name
     """
-    def __init__(self, key_store, algs=None, token_name='saml_token'):
-        super(SAMLServiceProvider, self).__init__(key_store=key_store, algs=algs)
-        self.token_name = token_name
+
+    def __init__(self, saml_session=None, registration_url=''):
+       self.session = saml_session
+       self.registration_url = registration_url
+       self._register_sp()
 
     def execute(self, ctx, req, resp):
         """Execute the security chain provider.
 
-        Checks for cookie with samk token which is JWT token. If found, the token is decoded and
-        validated with the keys provided by the ``KeyStore``. If the token contains the optional
-        key ID header (``kid``), then the decoding will be attempted with the specified key (if
-        such key can be found with the registered ``KeyStore``).
+        Checks for cookie with SAML token. If found, the token is decoded.
 
-        If the attempted decoding and validation of the SAML token is successful, then :class:`microkubes.security.auth.Auth`
+        If the attempted decoding of the SAML token is successful, then :class:`microkubes.security.auth.Auth`
         is created and set in the current security context.
 
         :param ctx: :class:`microkubes.security.auth.SecurityContext`, current ``SecurityContext``.
@@ -35,26 +35,73 @@ class SAMLServiceProvider(JWTProvider):
         :param resp: :class:`microkubes.security.chain.Response`, wrapped HTTP Response.
 
         """
-        token_value = req.get_cookie(self.token_name)
-        if not token_value:
-            return None
+        if 'samlUserdata' not in self.session:
+            r = self._prepare_saml_request(req)
+            auth = self._init_saml_auth(r)
 
-        keys = []
-        try:
-            keys = self._get_keys(token_value)
-        except KeyException:
-            return None
+            resp.redirect_url = auth.login()
+        if len(self.session['samlUserdata']) > 0:
+            user_attrs = self.session['samlUserdata']
+            auth = self._get_auth(attributes=user_attrs)
+            ctx.set_auth(auth)
 
-        if not keys:
-            return None
-
-        for key in keys:
-            try:
-                token = jwt.decode(token_value, key.load(), algorithms=self.algs)
-                auth = self._get_auth(token)
-                ctx.set_auth(auth)
-            except Exception as e:
-                log.debug("Failed to decode JWT: %s", e)
         return None
 
+    def _register_sp(self):
+        auth = self._init_saml_auth(None)
+        settings = auth.get_settings()
+        metadata = settings.get_sp_metadata()
+        errors = settings.validate_metadata(metadata)
 
+        if len(errors) > 0:
+            raise Exception('Invalid SP metadata: %s' % ', '.join(errors))
+
+        try:
+            headers = {'Content-Type': 'application/xml'}
+            requests.post('http://localhost:8080/saml/idp/services', data=metadata, headers=headers)
+        except Exception as e:
+            log.debug('Failed to register SP on IDP: %s' % str(e))
+
+    def _init_saml_auth(self, req):
+        auth = OneLogin_Saml2_Auth(req, custom_base_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), '../examples/flask/saml'))
+        return auth
+
+    def _get_auth(self, attributes={}):
+        """Create authentication object
+        """
+
+        user_id = attributes.get('urn:oid:0.9.2342.19200300.100.1.1', [])[0]
+        email =  attributes.get('urn:oid:1.3.6.1.4.1.5923.1.1.1.6', [])[0]
+        roles = attributes.get('urn:oid:1.3.6.1.4.1.5923.1.1.1.1', [])
+
+        if not user_id:
+            raise Exception('user_id is missing')
+        if not email:
+            raise Exception('email is missing')
+        if not roles:
+            raise Exception('roles not specified')
+
+        # TODO: Add scopes, namespaces and organizations in session created from Microkubes Identity Provider
+        # and user's fullname if possible
+        return Auth(user_id, email, roles=roles)
+
+    def _prepare_saml_request(self, req):
+        """Prepare SAML request
+        """
+
+        url_data = urlparse(req.url)
+
+        return {
+            'https': 'on' if req.scheme == 'https' else 'off',
+            'http_host': req.host,
+            'server_port': url_data.port,
+            'script_name': req.path,
+            'get_data': req.args.copy(),
+            'post_data': req.form.copy(),
+        }
+
+    def __call__(self, ctx, req, resp):
+        """Makes the instance of this class callable and thus available for use
+        directly as a ``SecurityChain`` provider.
+        """
+        return self.execute(ctx, req, resp)

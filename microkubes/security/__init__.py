@@ -15,7 +15,9 @@ from microkubes.security.keys import (Key,
                                       KeyException)
 from microkubes.security.jwt import JWTProvider
 from microkubes.security.oauth2 import OAuth2Provider
-from microkubes.security.saml import SAMLServiceProvider
+from microkubes.security.saml import (SAMLServiceProvider,
+                                      get_sp_metadata,
+                                      serve_acs)
 from microkubes.security.acl import (Policy as ACLPolicy,
                                      ACLProvider)
 

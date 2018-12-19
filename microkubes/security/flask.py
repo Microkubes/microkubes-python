@@ -220,8 +220,13 @@ class FlaskSecurity:
         self._oauth_provider = OAuth2Provider(key_store=self.key_store, algs=algs)
         return self
 
-    def saml(self, registration_url=''):
-        self._saml_sp = SAMLServiceProvider(saml_session=session, registration_url=registration_url)
+    def saml(self, config=None):
+        if not self.key_store:
+            raise FlaskSecurityError('KeyStore must be defined before setting up the SAML service provider.')
+        if not config:
+            raise FlaskSecurityError('SAML config not provided')
+
+        self._saml_sp = SAMLServiceProvider(self.key_store, config, saml_session=session)
         return self
 
     def public_route(self, *args):

@@ -127,6 +127,10 @@ class KeyStore:
                     self.keys[key_name[:-4] + '.pub'] = Key(abs_file_name, public=True)
                 elif lwr_name.endswith('.pem') or '.' not in lwr_name:
                     self.keys[key_name.split('.')[0]] = Key(abs_file_name, public=False)
+                elif lwr_name.endswith('.cert') or lwr_name.endswith('.crt'):
+                    self.keys[key_name] = Key(abs_file_name, public=True)
+                elif lwr_name.endswith('.key'):
+                    self.keys[key_name] = Key(abs_file_name, public=False)
 
     def _load_keys_from_map(self, keys):
         for key_name, key_file in keys.items():

@@ -1,11 +1,13 @@
 """ SAML service provider"""
 import os
 import requests
+import base64
+import re
 
 from flask import redirect
 from urllib.parse import urlparse
 from microkubes.security.auth import Auth
-from onelogin.saml2.auth import OneLogin_Saml2_Auth
+from onelogin.saml2.auth import OneLogin_Saml2_Auth, OneLogin_Saml2_Utils, OneLogin_Saml2_Settings
 from logging import getLogger
 
 log = getLogger(__name__)
@@ -17,10 +19,12 @@ class SAMLServiceProvider():
     :param session_name: :string, the SAML session name
     """
 
-    def __init__(self, saml_session=None, registration_url=''):
-       self.session = saml_session
-       self.registration_url = registration_url
-       self._register_sp()
+    def __init__(self, key_store, config, saml_session=None):
+        self.key_store = key_store
+        self.config = config
+        self.session = saml_session
+        self._set_keys()
+        self._register_sp()
 
     def execute(self, ctx, req, resp):
         """Execute the security chain provider.
@@ -33,11 +37,10 @@ class SAMLServiceProvider():
         :param ctx: :class:`microkubes.security.auth.SecurityContext`, current ``SecurityContext``.
         :param req: :class:`microkubes.security.chain.Request`, wrapped HTTP Request.
         :param resp: :class:`microkubes.security.chain.Response`, wrapped HTTP Response.
-
         """
         if 'samlUserdata' not in self.session:
-            r = self._prepare_saml_request(req)
-            auth = self._init_saml_auth(r)
+            r = prepare_saml_request(req)
+            auth = init_saml_auth(r, self.config)
 
             resp.redirect_url = auth.login()
         if len(self.session['samlUserdata']) > 0:
@@ -47,24 +50,29 @@ class SAMLServiceProvider():
 
         return None
 
+    def _set_keys(self):
+        """Set private key and sertificate
+        """
+        self.config['sp']['x509cert'] = self.key_store.get_key(key_name='service.cert', public=False).load().decode('utf-8')
+        self.config['idp']['x509cert'] = self.key_store.get_key(key_name='service.cert', public=False).load().decode('utf-8')
+        self.config['sp']['privateKey'] = self.key_store.get_key(key_name='service.key', public=False).load().decode('utf-8')
+
     def _register_sp(self):
-        auth = self._init_saml_auth(None)
-        settings = auth.get_settings()
-        metadata = settings.get_sp_metadata()
-        errors = settings.validate_metadata(metadata)
+        """ Sends SP metadata to the IDP
+        """
+        if not self.config.get('registration_url', None):
+            raise Exception('registration_url is missing from config')
+
+        metadata, errors = get_sp_metadata(self.config)
 
         if len(errors) > 0:
             raise Exception('Invalid SP metadata: %s' % ', '.join(errors))
 
         try:
             headers = {'Content-Type': 'application/xml'}
-            requests.post('http://localhost:8080/saml/idp/services', data=metadata, headers=headers)
+            requests.post(self.config.get('registration_url'), data=metadata, headers=headers)
         except Exception as e:
             log.debug('Failed to register SP on IDP: %s' % str(e))
-
-    def _init_saml_auth(self, req):
-        auth = OneLogin_Saml2_Auth(req, custom_base_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), '../examples/flask/saml'))
-        return auth
 
     def _get_auth(self, attributes={}):
         """Create authentication object
@@ -85,23 +93,80 @@ class SAMLServiceProvider():
         # and user's fullname if possible
         return Auth(user_id, email, roles=roles)
 
-    def _prepare_saml_request(self, req):
-        """Prepare SAML request
-        """
-
-        url_data = urlparse(req.url)
-
-        return {
-            'https': 'on' if req.scheme == 'https' else 'off',
-            'http_host': req.host,
-            'server_port': url_data.port,
-            'script_name': req.path,
-            'get_data': req.args.copy(),
-            'post_data': req.form.copy(),
-        }
-
     def __call__(self, ctx, req, resp):
         """Makes the instance of this class callable and thus available for use
         directly as a ``SecurityChain`` provider.
         """
         return self.execute(ctx, req, resp)
+
+
+def prepare_saml_request(req):
+    """Prepare SAML request
+
+    :param req: :class:`microkubes.security.chain.Request`, wrapped HTTP Request.
+
+    "returns: dict representing SAML request
+    """
+    url_data = urlparse(req.url)
+
+    return {
+        'https': 'on' if req.scheme == 'https' else 'off',
+        'http_host': req.host,
+        'server_port': url_data.port,
+        'script_name': req.path,
+        'get_data': req.args.copy(),
+        'post_data': req.form.copy(),
+    }
+
+def init_saml_auth(req, config):
+    """Prepare SAML request
+
+    :param req: :class:`microkubes.security.chain.Request`, wrapped HTTP Request.
+
+    :param config: ``dict``, SAML config
+
+    :returns: an instance of OneLogin_Saml2_Auth
+    """
+
+    settingsSAML = OneLogin_Saml2_Settings(settings=config)
+    auth = OneLogin_Saml2_Auth(req, old_settings=settingsSAML)
+    return auth
+
+def get_sp_metadata(config):
+    """Create and validate SP metadata
+
+    :param config: ``dict``, SAML config
+
+    :returns: metadata if no errors otherwise the errors
+    """
+    auth = init_saml_auth(None, config)
+    settings = auth.get_settings()
+    metadata = settings.get_sp_metadata()
+    errors = settings.validate_metadata(metadata)
+
+    return (metadata, errors)
+
+def serve_acs(request, session, config):
+    """ Accept SAML response from the IDP for the purpose of establishing a session based on an assertion.
+
+    :param request: :object: instance of HTTP Request.
+
+    :param session: :object: session object from the HTTP request
+
+    :param config: ``dict``, SAML config
+
+    :returns: redirect user to the desire resource
+    """
+    req = prepare_saml_request(request)
+    auth = init_saml_auth(req, config)
+    auth.process_response()
+    errors = auth.get_errors()
+    not_auth_warn = not auth.is_authenticated()
+
+    if len(errors) == 0:
+        session['samlUserdata'] = auth.get_attributes()
+        session['samlNameId'] = auth.get_nameid()
+        session['samlSessionIndex'] = auth.get_session_index()
+        self_url = OneLogin_Saml2_Utils.get_self_url(req)
+        if 'RelayState' in request.form and self_url != request.form['RelayState']:
+            return redirect(auth.redirect_to(request.form['RelayState']))

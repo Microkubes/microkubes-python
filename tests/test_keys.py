@@ -31,8 +31,11 @@ def test_key_store_load_from_dir():
         with open(path_join(tmpdir, 'system.pub'), 'wb') as kf:
             kf.write(b'SYSTEM PUBLIC KEY')
 
-        with open(path_join(tmpdir, 'ignored.crt'), 'wb') as kf:
-            kf.write(b'this must be ignored')
+        with open(path_join(tmpdir, 'service.crt'), 'wb') as kf:
+            kf.write(b'service cert')
+
+        with open(path_join(tmpdir, 'service.key'), 'wb') as kf:
+            kf.write(b'service private key')
 
         with open(path_join(tmpdir, 'default.pub'), 'wb') as kf:
             kf.write(b'DEFAULT PUBLIC KEY')
@@ -42,7 +45,9 @@ def test_key_store_load_from_dir():
 
         assert ks.keys.get('ignored') is None
         assert ks.keys.get('ignored.pub') is None
-        assert ks.keys.get('ignored.crt') is None
+
+        assert ks.keys.get('service.crt') is not None
+        assert ks.keys.get('service.key') is not None
 
         syskey = ks.get_key('system')
         assert syskey is not None
@@ -59,7 +64,7 @@ def test_key_store_load_from_dir():
 
         public_keys = ks.public_keys()
 
-        assert len(public_keys) == 2
+        assert len(public_keys) == 3
         assert public_keys.get('system') is not None
         assert public_keys.get('default') is not None
 

@@ -221,6 +221,12 @@ class FlaskSecurity:
         return self
 
     def saml(self, config=None):
+        """Setup SAML SP
+
+        :param config: ``dict``, the SAML SP config
+
+        :returns: :class:`FlaskSecurity`.
+        """
         if not self.key_store:
             raise FlaskSecurityError('KeyStore must be defined before setting up the SAML service provider.')
         if not config:

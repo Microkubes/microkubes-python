@@ -16,7 +16,7 @@ class SAMLServiceProvider():
     :param session: ``dict``, the HTTP request session
     """
 
-    def __init__(self, key_store, config, saml_session=None):
+    def __init__(self, key_store, config, saml_session={}):
         self.key_store = key_store
         self.config = config
         self.session = saml_session
@@ -41,7 +41,7 @@ class SAMLServiceProvider():
             auth = SAMLSPUtils.init_saml_auth(r, self.config)
 
             resp.redirect_url = auth.login()
-        if len(self.session['samlUserdata']) > 0:
+        if len(self.session.get('samlUserdata', {})) > 0:
             user_attrs = self.session['samlUserdata']
             auth = self._get_auth(attributes=user_attrs)
             ctx.set_auth(auth)

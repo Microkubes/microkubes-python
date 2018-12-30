@@ -109,6 +109,12 @@ class Request:
         return self._getattr('form')
 
     @property
+    def args(self):
+        """HTTP request args
+        """
+        return self._getattr('args')
+
+    @property
     def json(self):
         """Dict containing the decoded JSON data.
         """
@@ -120,6 +126,12 @@ class Request:
         """
         return self._getattr('headers')
 
+    @property
+    def cookies(self):
+        """HTTP Request cookies dict.
+        """
+        return self._getattr('cookies')
+
     def get_header(self, header):
         """Returns the value of the specified HTTP request header.
 
@@ -129,6 +141,16 @@ class Request:
 
         """
         return self._getattr('headers', {}).get(header)
+
+    def get_cookie(self, name):
+        """Returns the value of the specified HTTP request cookie.
+
+        :param name" ``str``, the cookie name.
+
+        :returns: ``str`` the cookie value or ``None``.
+
+        """
+        return self._getattr('cookies', {}).get(name)
 
     def get_data(self):
         """Get the raw HTTP request data.
@@ -162,6 +184,7 @@ class Response:
         self._status_code = 200
         self._buffer = StringIO('')
         self.modified = False
+        self.redirect_url = None
 
     @property
     def headers(self):

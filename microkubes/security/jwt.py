@@ -15,7 +15,7 @@ class JWTProvider:
     :param key_store: :class:`microkubes.security.keys.KeyStore`, the KeyStore to use with this provider.
     :param header: ``str``, the name of the security header. Default is ``Authorization``.
     :param auth_schema: ``str``, the format of the security header. The default schema is ``Bearer`` token.
-    :param algs: ``list``, list of supported hash signing algorithms. Default is ``["HS256", "RS256"]``.
+    :param algs: ``list``, list of supported hash signing algorithms. Default is ``['HS256', 'HS512', 'RS256', 'RS512']``.
 
     """
     def __init__(self, key_store, header='Authorization', auth_schema='Bearer', algs=None):

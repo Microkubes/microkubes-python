@@ -8,6 +8,7 @@ from flask import request, make_response, g, session, redirect
 from microkubes.security.jwt import JWTProvider
 from microkubes.security.oauth2 import OAuth2Provider
 from microkubes.security.saml import SAMLServiceProvider
+from microkubes.security.acl import ACLProvider
 from microkubes.security.auth import SecurityContext
 from microkubes.security.chain import (Request,
                                        Response,
@@ -161,6 +162,7 @@ class FlaskSecurity:
         self._jwt_provider = None
         self._oauth_provider = None
         self._saml_sp = None
+        self._acl_provider = None
         self._other_providers = []
         self._prefer_json_respose = True
 
@@ -233,6 +235,16 @@ class FlaskSecurity:
             raise FlaskSecurityError('SAML config not provided')
 
         self._saml_sp = SAMLServiceProvider(self.key_store, config, saml_session=session)
+
+        return self
+
+    def acl(self, config=None):
+
+        if not config:
+            raise FlaskSecurityError('ACL config not provided')
+
+        self._acl_provider = ACLProvider(config)
+
         return self
 
     def public_route(self, *args):
@@ -333,12 +345,14 @@ class FlaskSecurity:
         if self._saml_sp:
             providers.append(self._saml_sp)
 
+        if self._acl_provider:
+            providers.append(self._acl_provider)
+
         for provider, position in self._other_providers:
             if position in ['after_oauth', 'after_oauth2', 'last']:
                 providers.append(provider)
 
         providers.append(is_authenticated_provider)
-
 
         for provider, position in self._other_providers:
             if position == 'final':

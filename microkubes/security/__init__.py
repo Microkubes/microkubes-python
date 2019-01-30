@@ -2,23 +2,18 @@
 """
 
 
-from microkubes.security.auth import (SecurityContext,
-                                      Auth,
-                                      ThreadLocalSecurityContext)
+from microkubes.security.auth import SecurityContext, Auth, ThreadLocalSecurityContext
 
-from microkubes.security.chain import (SecurityChain,
-                                       SecurityException,
-                                       is_authenticated_provider,
-                                       public_routes_provider)
-from microkubes.security.keys import (Key,
-                                      KeyStore,
-                                      KeyException)
+from microkubes.security.chain import (
+    SecurityChain,
+    SecurityException,
+    is_authenticated_provider,
+    public_routes_provider,
+)
+from microkubes.security.keys import Key, KeyStore, KeyException
 from microkubes.security.jwt import JWTProvider
 from microkubes.security.oauth2 import OAuth2Provider
-from microkubes.security.saml import (SAMLServiceProvider,
-                                      SAMLSPUtils)
-from microkubes.security.acl import (Policy as ACLPolicy,
-                                     ACLProvider)
+from microkubes.security.saml import SAMLServiceProvider, SAMLSPUtils
 
 
 try:
@@ -32,6 +27,7 @@ except ImportError:
 _HAS_FLASK = False
 try:
     import flask
+
     _HAS_FLASK = True
 except ImportError:
     pass
@@ -39,6 +35,8 @@ except ImportError:
 
 # if flask is installed, import Flask integration components
 if _HAS_FLASK:
-    from microkubes.security.flask import (FlaskSecurity,
-                                           FlaskSecurityContext,
-                                           FlaskSecurityError)
+    from microkubes.security.flask import (
+        FlaskSecurity,
+        FlaskSecurityContext,
+        FlaskSecurityError,
+    )

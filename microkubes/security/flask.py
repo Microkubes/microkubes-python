@@ -19,7 +19,6 @@ from microkubes.security.chain import (
     public_routes_provider,
 )
 from microkubes.security.keys import KeyStore
-from flask_miracle import Acl
 
 
 class FlaskSecurityError(Exception):
@@ -81,8 +80,8 @@ class Security:
                 flask_response = make_response(
                     dumps(
                         {
-                            "code": security_error.status_code,
-                            "message": str(security_error),
+                            'code': security_error.status_code,
+                            'message': str(security_error),
                         }
                     ),
                     security_error.status_code,
@@ -122,7 +121,7 @@ class Security:
             if not allowed:
                 if flask_resp:
                     return flask_resp
-                return make_response("Request denied", 403)
+                return make_response('Request denied', 403)
             if flask_resp:
                 return flask_resp
             return decorated(*args, **kwargs)
@@ -189,7 +188,7 @@ class FlaskSecurity:
         :returns: :class:`FlaskSecurity`.
         """
         if self.key_store:
-            raise FlaskSecurityError("KeyStore is already defined.")
+            raise FlaskSecurityError('KeyStore is already defined.')
         self.key_store = KeyStore(dir_path=path)
         return self
 
@@ -206,7 +205,7 @@ class FlaskSecurity:
         self.key_store.add_key(key_name, key_file)
         return self
 
-    def jwt(self, header="Authorization", schema="Bearer", algs=None):
+    def jwt(self, header='Authorization', schema='Bearer', algs=None):
         """Setup JWT security provider.
 
         This provider tries to decode and create auth from a JWT in the HTTP request.
@@ -219,7 +218,7 @@ class FlaskSecurity:
         """
         if not self.key_store:
             raise FlaskSecurityError(
-                "KeyStore must be defined before setting up the JWT provider."
+                'KeyStore must be defined before setting up the JWT provider.'
             )
         self._jwt_provider = JWTProvider(
             self.key_store, header=header, auth_schema=schema, algs=algs
@@ -238,7 +237,7 @@ class FlaskSecurity:
         """
         if not self.key_store:
             raise FlaskSecurityError(
-                "KeyStore must be defined before setting up the OAuth2 provider."
+                'KeyStore must be defined before setting up the OAuth2 provider.'
             )
         self._oauth_provider = OAuth2Provider(key_store=self.key_store, algs=algs)
         return self
@@ -252,10 +251,10 @@ class FlaskSecurity:
         """
         if not self.key_store:
             raise FlaskSecurityError(
-                "KeyStore must be defined before setting up the SAML service provider."
+                'KeyStore must be defined before setting up the SAML service provider.'
             )
         if not config:
-            raise FlaskSecurityError("SAML config not provided")
+            raise FlaskSecurityError('SAML config not provided')
 
         self._saml_sp = SAMLServiceProvider(
             self.key_store, config, saml_session=session
@@ -263,7 +262,7 @@ class FlaskSecurity:
 
         return self
 
-    def acl(self, app, config=None):
+    def acl(self, config=None):
         """Setup ACL provider
 
         :param app: :class:`flask.Flask`, current ``Flask`` instance.
@@ -272,18 +271,9 @@ class FlaskSecurity:
         :returns: :class:`FlaskSecurity`.
         """
         if not config:
-            raise FlaskSecurityError("ACL config not provided")
+            raise FlaskSecurityError('ACL config not provided')
 
-        class AclClass:
-            STRUCT = config["struct"]
-            GRANTS = config["grants"]
-
-        app.config["MACL_DEFINITION"] = config["MACL_DEFFINITION"]
-        app.config["MACL_CLASS"] = AclClass
-        app.config["MACL_DEFAULT_ROLES"] = config["MACL_DEFAULT_ROLES"]
-        macl = Acl(app)
-
-        self._acl_provider = ACLProvider(macl)
+        self._acl_provider = ACLProvider(config)
 
         return self
 
@@ -312,7 +302,7 @@ class FlaskSecurity:
         """
         return self.public_route(*args)
 
-    def add_provider(self, provider, position="last"):
+    def add_provider(self, provider, position='last'):
         """Add custom security provider to the security chain.
 
         The chain executes multiple providers, in order, when processing a request.
@@ -354,7 +344,7 @@ class FlaskSecurity:
 
         :returns: :class:`FlaskSecurity`.
         """
-        position = position or "last"
+        position = position or 'last'
         self._other_providers.append((provider, position))
         return self
 
@@ -362,21 +352,21 @@ class FlaskSecurity:
         providers = []
 
         for provider, position in self._other_providers:
-            if position == "first":
+            if position == 'first':
                 providers.append(provider)
 
         for provider in self._public_routes:
             providers.append(provider)
 
         for provider, position in self._other_providers:
-            if position in ["before_jwt", "after_public"]:
+            if position in ['before_jwt', 'after_public']:
                 providers.append(provider)
 
         if self._jwt_provider:
             providers.append(self._jwt_provider)
 
         for provider, position in self._other_providers:
-            if position in ["after_jwt", "before_oauth", "before_oauth2"]:
+            if position in ['after_jwt', 'before_oauth', 'before_oauth2']:
                 providers.append(provider)
 
         if self._oauth_provider:
@@ -389,13 +379,13 @@ class FlaskSecurity:
             providers.append(self._acl_provider)
 
         for provider, position in self._other_providers:
-            if position in ["after_oauth", "after_oauth2", "last"]:
+            if position in ['after_oauth', 'after_oauth2', 'last']:
                 providers.append(provider)
 
         providers.append(is_authenticated_provider)
 
         for provider, position in self._other_providers:
-            if position == "final":
+            if position == 'final':
                 providers.append(provider)
 
         return providers
@@ -406,7 +396,7 @@ class FlaskSecurity:
         :returns: the :class:`microkubes.security.chain.SecurityChain`
         """
         if not self.key_store:
-            raise FlaskSecurityError("Please define a KeyStore.")
+            raise FlaskSecurityError('Please define a KeyStore.')
 
         for provider in self._merge_providers():
             self._chain.provider(provider)

@@ -283,23 +283,48 @@ def serve_saml_ednpoints():
 
 ## Set up ACL provider
 
-ACL provider allows for integrating roles in a microservice as part of the security chain.
+ACL provider allows for integrating policies in a microservice as part of the security chain.
 
-In order to use it, first a configuration needs to be made where all roles, permissions and resources are specified, as well as the grants for users.
+Policies are created as part of the ACL configuration, where you can specify fine-grained control
+over how each authenticated user has access to each resource. Each policy object has the
+following structure:
 
-To protect an endpoint in Flask, add the decorator `macl_check_all` to check if all currently active roles have access to the requested resource or `macl_check_any` to check if any of the currently active roles has access to the requested resource.
+```
+{
+    'id': 'user-ana-allow-access',
+    'description': 'Allow the user ana to read todos',
+    'resources': ['/todos'],
+    'actions': [
+        'api:read'
+    ],
+    'subjects': ['ana'],
+    'roles': ['user'],
+    'organizations': ['test-organization'],
+    'namespaces': ['test-namespace']
+}
+```
 
-Then, depending of the roles that the currently authenticated user have, he will be allowed or disallowed to access the resource.
+Where:
 
-The ACL provider is built on top of [flask-miracle-acl](https://github.com/tdpsk/flask-miracle-acl) library.
+* **id** is an id of the policy.
+* **description** is a description of what the policy does.
+* **resources** is a list of resource paths.
+* **actions** is a list of API actions. Currently supports "api:read" (`GET`) and "api:write" (`POST`, `PUT`, `PATCH`, `DELETE`). 
+* **subjects** is a list of users that are allowed to access the resource in the policy.
+* **roles** is a list of roles.
+* **organizations** is a list of organizations that a user belongs to.
+* **namespaces** is a list of namespaces that a user belongs to.
 
-Below is the example that shows how to setup a certain role for a resource in an action in Flask:
+Based on the currently authenticated user, all policy properties are checked against of those set in the JWT token.
+
+The ACL provider is built on top of [miracle-acl](https://github.com/kolypto/py-miracle) library.
+
+Below is the example that shows how to configure the ACL provider and secure an action in Flask:
 
 ```python
 import logging
 
 from flask import Flask
-from flask_miracle import macl_check_all
 
 from microkubes.security import FlaskSecurity
 
@@ -307,35 +332,46 @@ logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 
-config = {
-    'struct': {
-        'hello': ['create', 'read', 'update', 'delete']
+config_acl = {
+    'policies': [{
+        'id': 'user-ana-allow-access',
+        'description': 'Allow the user ana to read todos',
+        'resources': ['/todos'],
+        'actions': [
+            'api:read'
+        ],
+        'subjects': ['ana'],
+        'roles': ['user'],
+        'organizations': ['test-organization'],
+        'namespaces': ['test-namespace']
     },
-    'grants': {
-        'user': {
-            'hello': ['create', 'read', 'update']
-        },
-        'admin': {
-            'hello': ['create', 'read', 'update', 'delete']
-        }
-    },
-    'MACL_DEFFINITION': {'roles': ['user', 'admin']},
-    'MACL_DEFAULT_ROLES': ['user']
+    {
+        'id': 'admin-allow-full-access',
+        'descrition': 'Allow the admin to have full access.',
+        'resources': ['/todos'],
+        'actions': [
+            'api:read',
+            'api:write'
+        ],
+        'subjects': [],
+        'roles': ['admin'],
+        'organizations': ['test-organization', 'test-organization-1'],
+        'namespaces': ['test-namespace', 'test-namespace-1']
+    }]
 }
 
 sec = (FlaskSecurity().
-        keys_dir("./keys").
+        keys_dir('./keys').
         jwt().
         oauth2().
-	    acl(app, config=config).
+	    acl(config=config).
         build())
 
-@app.route("/hello", methods=["GET"])
+@app.route('/todos', methods=['GET'])
 @sec.secured
-@macl_check_all('hello', 'read')
 def todos():
     auth = sec.context.get_auth()  # get the Auth from the security context
-    return "Hello %s from Flask service on Microkubes" % auth.username
+    return 'Hello %s from Flask service on Microkubes' % auth.username
 ```
 
 ## Contributing

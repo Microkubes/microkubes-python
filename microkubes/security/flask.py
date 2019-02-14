@@ -8,25 +8,30 @@ from flask import request, make_response, g, session, redirect
 from microkubes.security.jwt import JWTProvider
 from microkubes.security.oauth2 import OAuth2Provider
 from microkubes.security.saml import SAMLServiceProvider
+from microkubes.security.acl import ACLProvider
 from microkubes.security.auth import SecurityContext
-from microkubes.security.chain import (Request,
-                                       Response,
-                                       SecurityException,
-                                       SecurityChain,
-                                       is_authenticated_provider,
-                                       public_routes_provider)
+from microkubes.security.chain import (
+    Request,
+    Response,
+    SecurityException,
+    SecurityChain,
+    is_authenticated_provider,
+    public_routes_provider,
+)
 from microkubes.security.keys import KeyStore
 
 
 class FlaskSecurityError(Exception):
     """Error during security setup for Flask apps.
     """
+
     pass
 
 
 class FlaskSecurityContext(SecurityContext):
     """SecurityContext that wraps Flask's ``g`` object. Request Scoped.
     """
+
     def __init__(self):
         super(FlaskSecurityContext, self).__init__(g)
 
@@ -51,6 +56,7 @@ class Security:
                 return 'My secured action.'
 
     """
+
     def __init__(self, security_chain, context, json_response=True):
         self.security_chain = security_chain
         self.context = context
@@ -71,12 +77,19 @@ class Security:
             if resp.redirect_url is not None:
                 return (False, None, resp.redirect_url)
             if self.json_response:
-                flask_response = make_response(dumps({
-                    'code': security_error.status_code,
-                    'message': str(security_error),
-                }), security_error.status_code)
+                flask_response = make_response(
+                    dumps(
+                        {
+                            'code': security_error.status_code,
+                            'message': str(security_error),
+                        }
+                    ),
+                    security_error.status_code,
+                )
             else:
-                flask_response = make_response(str(security_error), security_error.status_code)
+                flask_response = make_response(
+                    str(security_error), security_error.status_code
+                )
             if security_error.headers:
                 flask_response.headers.update(security_error.headers)
             return (False, flask_response, None)
@@ -99,6 +112,7 @@ class Security:
 
         :returns: ``function``, the security decorator for the given method or function..
         """
+
         @wraps(decorated)
         def _secured_method(*args, **kwargs):
             allowed, flask_resp, redirect_url = self.check()
@@ -107,7 +121,7 @@ class Security:
             if not allowed:
                 if flask_resp:
                     return flask_resp
-                return make_response("Request denied", 403)
+                return make_response('Request denied', 403)
             if flask_resp:
                 return flask_resp
             return decorated(*args, **kwargs)
@@ -152,6 +166,7 @@ class FlaskSecurity:
     :param key_store: :class:`microkubes.security.keys.KeyStore`, ``KeyStore`` instance.
 
     """
+
     def __init__(self, context=None, key_store=None):
         self.key_store = key_store
         context = context or _SECURITY_CONTEXT
@@ -161,6 +176,7 @@ class FlaskSecurity:
         self._jwt_provider = None
         self._oauth_provider = None
         self._saml_sp = None
+        self._acl_provider = None
         self._other_providers = []
         self._prefer_json_respose = True
 
@@ -172,7 +188,7 @@ class FlaskSecurity:
         :returns: :class:`FlaskSecurity`.
         """
         if self.key_store:
-            raise FlaskSecurityError("KeyStore is already defined.")
+            raise FlaskSecurityError('KeyStore is already defined.')
         self.key_store = KeyStore(dir_path=path)
         return self
 
@@ -201,8 +217,12 @@ class FlaskSecurity:
         :returns: :class:`FlaskSecurity`.
         """
         if not self.key_store:
-            raise FlaskSecurityError('KeyStore must be defined before setting up the JWT provider.')
-        self._jwt_provider = JWTProvider(self.key_store, header=header, auth_schema=schema, algs=algs)
+            raise FlaskSecurityError(
+                'KeyStore must be defined before setting up the JWT provider.'
+            )
+        self._jwt_provider = JWTProvider(
+            self.key_store, header=header, auth_schema=schema, algs=algs
+        )
         return self
 
     def oauth2(self, algs=None):
@@ -216,7 +236,9 @@ class FlaskSecurity:
         :returns: :class:`FlaskSecurity`.
         """
         if not self.key_store:
-            raise FlaskSecurityError('KeyStore must be defined before setting up the OAuth2 provider.')
+            raise FlaskSecurityError(
+                'KeyStore must be defined before setting up the OAuth2 provider.'
+            )
         self._oauth_provider = OAuth2Provider(key_store=self.key_store, algs=algs)
         return self
 
@@ -228,11 +250,31 @@ class FlaskSecurity:
         :returns: :class:`FlaskSecurity`.
         """
         if not self.key_store:
-            raise FlaskSecurityError('KeyStore must be defined before setting up the SAML service provider.')
+            raise FlaskSecurityError(
+                'KeyStore must be defined before setting up the SAML service provider.'
+            )
         if not config:
             raise FlaskSecurityError('SAML config not provided')
 
-        self._saml_sp = SAMLServiceProvider(self.key_store, config, saml_session=session)
+        self._saml_sp = SAMLServiceProvider(
+            self.key_store, config, saml_session=session
+        )
+
+        return self
+
+    def acl(self, config=None):
+        """Setup ACL provider
+
+        :param app: :class:`flask.Flask`, current ``Flask`` instance.
+        :param config: ``dict``, the ACL provider config
+
+        :returns: :class:`FlaskSecurity`.
+        """
+        if not config:
+            raise FlaskSecurityError('ACL config not provided')
+
+        self._acl_provider = ACLProvider(config)
+
         return self
 
     def public_route(self, *args):
@@ -333,12 +375,14 @@ class FlaskSecurity:
         if self._saml_sp:
             providers.append(self._saml_sp)
 
+        if self._acl_provider:
+            providers.append(self._acl_provider)
+
         for provider, position in self._other_providers:
             if position in ['after_oauth', 'after_oauth2', 'last']:
                 providers.append(provider)
 
         providers.append(is_authenticated_provider)
-
 
         for provider, position in self._other_providers:
             if position == 'final':
@@ -367,5 +411,9 @@ class FlaskSecurity:
         :returns: :class:`Security`.
         """
         chain = self.build_chain()
-        security = Security(security_chain=chain, context=self._context, json_response=self._prefer_json_respose)
+        security = Security(
+            security_chain=chain,
+            context=self._context,
+            json_response=self._prefer_json_respose,
+        )
         return security

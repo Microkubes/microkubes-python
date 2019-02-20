@@ -1,0 +1,1 @@
+from microkubes.tools.healthcheck import add_healthcheck

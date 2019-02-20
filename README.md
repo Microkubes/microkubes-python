@@ -374,6 +374,17 @@ def todos():
     return 'Hello %s from Flask service on Microkubes' % auth.username
 ```
 
+## Healthcheck
+To add healthcheck to your microservice add the following code:
+
+```python
+from flask import Flask
+from microkubes.tools import add_healthcheck
+
+app = Flask(__name__)    
+add_healthcheck(app)
+```
+
 ## Contributing
 
 For contributing to this repository or its documentation, see the [Contributing guidelines](CONTRIBUTING.md).

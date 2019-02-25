@@ -148,7 +148,7 @@ class TestACLProvider(TestCase):
     @mock.patch('microkubes.security.chain.Request.path', new_callable=mock.PropertyMock)
     @mock.patch.object(Request, 'get_header')
     def test_acl_provider(self, get_header_mock, path_mock, method_mock):
-        method_mock.return_value = 'GET'
+        method_mock.return_value = 'POST'
         path_mock.return_value = '/todos'
 
         with TemporaryDirectory() as tmpdir:

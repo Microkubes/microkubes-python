@@ -385,6 +385,38 @@ app = Flask(__name__)
 add_healthcheck(app)
 ```
 
+## Version endpoint
+To add version endpoint to your microservice, first you need to create a configuration
+JSON file in the root of the microservice project, that looks like this:
+
+```json
+{
+    "version": "1.0.0"
+}
+```
+
+After that, add the following code after you create the Flask instance:
+
+```python
+import os 
+from flask import Flask
+from microkubes.tools import add_version_endpoint, read_config
+
+app = Flask(__name__)    
+
+current_dir_path = os.path.dirname(os.path.realpath(__file__))
+config = read_config(current_dir_path + '/config.json')
+add_version_endpoint(app, config)
+```
+
+To test it out, start the Flask server and do `curl http://localhost:5000/version` and it will return:
+
+```json
+{
+    "version": "1.0.0"
+}
+```
+
 ## Contributing
 
 For contributing to this repository or its documentation, see the [Contributing guidelines](CONTRIBUTING.md).

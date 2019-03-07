@@ -45,6 +45,13 @@ If you're developing with [Flask](http://flask.pocoo.org/), then you need to ins
 pip install Flask
 ```
 
+Optionally, if you wat to add `/healthcheck` endpoint in your Flask microservice, you need to install 
+the healthcheck library:
+
+```bash
+pip install healthcheck
+```
+
 ## Example service in Flask
 
 As an example we can write small hello-world-like service in Flask (service.py):
@@ -375,7 +382,14 @@ def todos():
 ```
 
 ## Healthcheck
-To add healthcheck to your microservice add the following code:
+
+First make sure you have `healthcheck` installed:
+
+```bash
+pip install healthcheck
+```
+
+Then add healthcheck to your microservice by adding the following code:
 
 ```python
 from flask import Flask

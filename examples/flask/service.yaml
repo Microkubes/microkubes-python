@@ -24,13 +24,14 @@ spec:
           imagePullPolicy: Never
           env:
             - name: API_GATEWAY_URL
-              value: "http://demo-kong-admin:8001"
+              value: "http://kong-admin:8001"
           ports:
             - containerPort: 5000
           volumeMounts:
-            - name: microkubes-keys
-              mountPath: /run/secrets
+            - name: microkubes-secrets
+              mountPath: /run/secrets/microkubes
       volumes:
-        - name: microkubes-keys
+        - name: microkubes-secrets
           secret:
-            secretName: microkubes-keys
+            secretName: microkubes-secrets
+            defaultMode: 420

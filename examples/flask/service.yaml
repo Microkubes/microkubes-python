@@ -20,8 +20,8 @@ spec:
     spec:
       containers:
         - name: hello-service
-          image: hello-service:latest
-          imagePullPolicy: Never
+          image: microkubes/hello-service:latest
+          imagePullPolicy: Always
           env:
             - name: API_GATEWAY_URL
               value: "http://demo-kong-admin:8001"

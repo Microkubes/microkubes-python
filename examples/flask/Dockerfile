@@ -1,9 +1,9 @@
 FROM python:3.7-slim-stretch
 
-RUN apt-get update && apt-get install -y git
+RUN apt-get update && apt-get install -y git libxmlsec1-dev pkg-config gcc
 
 # Install microkubes-python
-RUN pip install "git+https://github.com/Microkubes/microkubes-python#egg=microkubes-python"
+RUN pip install "git+https://github.com/Microkubes/microkubes-python"
 
 # Install flask
 RUN pip install Flask

@@ -9,7 +9,7 @@ registrator = KongGatewayRegistrator(os.environ.get(
 
 # set up a security chain
 sec = (FlaskSecurity().
-       keys_dir("/run/secrets").   # set up a key-store that has at least the public keys from the platform
+       keys_dir("/run/secrets/microkubes").   # set up a key-store that has at least the public keys from the platform
        jwt().                # Add JWT support
        oauth2().             # Add OAuth2 support
        build())              # Build the security for Flask
@@ -25,7 +25,7 @@ registrator.register(name="hello-service",                  # the service name.
 
 
 @app.route("/hello")
-@sec.secured   # this action is now secure
+# @sec.secured   # this action is now secure
 def hello():
     auth = sec.context.get_auth()  # get the Auth from the security context
-    return "Hello %s from Flask service on Microkubes" % auth.username
+    return "Hello GDG 2019 from Flask service on Microkubes"
